@@ -3,6 +3,66 @@ import torch
 import os
 from torch.utils.data import Dataset
 from tqdm.notebook import tqdm
+from PIL import Image
+from torchvision import datasets, transforms
+
+def get_annotation(id,input,anno_path='/content/labels'):
+    anno = np.load(os.path.join(anno_path,'{:06d}.npy'.format(id)),allow_pickle=True).item()
+    return anno.get(input)
+
+
+class MiniDataset(Dataset):
+    def __init__(self, base_p, label_f, depth, crops_rgb_f, label_name=['container capacity']):
+      self.label_f = label_f #_f = folder
+      self.depth = depth
+      self.base = base_p
+      self.label_name = label_name
+      self.crops_rgb_f = crops_rgb_f
+      self.samples = os.listdir(crops_rgb_f)
+      self.ids = [ int(x.split('.')[0]) for x in self.samples]
+      self.transform = transforms.Compose([
+                                             transforms.Resize((320, 320)),
+                                             transforms.ToTensor(),
+                                             transforms.ConvertImageDtype(torch.float),
+                                             ])
+    def __len__(self):
+      return len(self.ids)
+
+    def __getitem__(self, idx):
+      id_ = self.ids[idx]
+        
+      # depth
+      depth = np.asarray(Image.open(os.path.join(self.depth,'{:06d}.png'.format(id_))))[:,:,np.newaxis]
+      
+      # rgb_cropped
+      crop = np.asarray(Image.open(os.path.join(self.crops_rgb_f,'{:06d}.png'.format(id_))))
+
+      h, w, c = crop.shape
+
+      resX = 640 - h
+      resY = 640 - w
+
+      up = resX // 2
+      down = up
+      if resX % 2 != 0:
+        down +=1
+
+      left = resY // 2
+      right = left
+
+      if resY % 2 != 0:
+        left += 1
+
+      padding = transforms.Pad((left, up, right, down))
+
+    
+      image = Image.fromarray(np.concatenate((crop, depth), axis=2))
+      image = padding(image)
+      image = self.transform(image)
+      # label
+      label = np.array([get_annotation(id_,name,os.path.join(self.base, 'labels')) for name in self.label_name])
+
+      return image, label
 
 
 class audioDataSet(Dataset):
