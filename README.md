@@ -3,7 +3,7 @@
 ### Task2
 
 - [x] Audio processing
-- [x] Classification
+- [x] Classification using EfficientNet/MobileNet
 
 ### Task1
 
@@ -15,3 +15,4 @@
 
 - [x] RGBD+vision model
 - [ ] PointCloud+semantic feature
+- [ ] Transfer learning
