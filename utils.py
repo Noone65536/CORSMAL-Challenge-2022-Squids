@@ -61,6 +61,55 @@ def voting(audio_folder, voting_dir, model_pretrained, device, save_size=64):
       print("elapsed_time:{}".format(elapsed_time) + "sec")
 
 
+def audioPreprocessing_t1(audio_folder, gt,T2_mid_dir, T2_pred_dir, model, device):
+    audio_paths = [os.path.join(audio_folder, path) for path in sorted(os.listdir(audio_folder))]
+    save_size=64
+    ratio_step = 0.25
+    count = 0
+    MAX_VALUE=194.19187653405487
+    MIN_VALUE=-313.07119549054045
+    
+    pbar = tqdm(total=len(audio_paths))
+    
+    for i, path in enumerate(audio_paths):
+      id = i
+      start_time = gt[gt.id==id]['start'].item()
+      end_time = gt[gt.id==id]['end'].item()
+      filling_type = gt[gt.id==id]['filling_type'].item()
+      datalist = []
+      predlist = []
+      sample_rate, signal = scipy.io.wavfile.read(path)
+      ap = AudioProcessing(sample_rate,signal,nfilt=save_size)
+      mfcc = ap.calc_MFCC()
+      mfcc_length=mfcc.shape[0]
+    
+      if mfcc_length < save_size:
+        print("file {} is too short".format(id))
+      else:
+        f_step=int(mfcc.shape[1]*ratio_step)
+        f_length=mfcc.shape[1]
+        save_mfcc_num=int(np.ceil(float(np.abs(mfcc_length - save_size)) / f_step))
+    
+        for i in range(save_mfcc_num):
+          tmp_mfcc = mfcc[i*f_step:save_size+i*f_step,: ,:]
+          tmp_mfcc= (tmp_mfcc-MIN_VALUE)/(MAX_VALUE-MIN_VALUE)
+          tmp_mfcc=tmp_mfcc.transpose(2,0,1)
+          audio=torch.from_numpy(tmp_mfcc.astype(np.float32))
+          audio=torch.unsqueeze(audio, 0)
+          audio = audio.to(device) 
+          feature, pred=model.extract(audio)
+          _,pred=torch.max(pred,1)
+          datalist.append(feature.to('cpu').detach().numpy().copy())
+          predlist.append(pred.item())
+        datalist = np.squeeze(np.array(datalist))
+        predlist = np.squeeze(np.array(predlist))
+        np.save(os.path.join(T2_mid_dir, "{0:06d}".format(id)), datalist)
+        np.save(os.path.join(T2_pred_dir, "{0:06d}".format(id)), predlist)
+    
+      pbar.update()
+
+
+
 
 
 def audioPreprocessing(audio_folder, gt, base_path, mfcc_path):
