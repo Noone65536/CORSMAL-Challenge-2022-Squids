@@ -14,5 +14,8 @@
 ### Task3-5
 
 - [x] RGBD+vision model
-- [ ] PointCloud+semantic feature
+- [ ] RGB(ImageNet pretrain) + PointCloud
+- [ ] PointCloud+semantic feature (Modify conv layers)
+- [ ] Dimension -> Capacity
+- [ ] Dimension + Capacity -> mass
 - [ ] Transfer learning
