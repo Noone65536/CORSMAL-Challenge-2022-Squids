@@ -356,9 +356,9 @@ class Block(nn.Module):
 
 
 class MobileNetV3_Large(nn.Module):
-    def __init__(self, num_classes=4):
+    def __init__(self, input_channel=4, num_classes=4):
         super(MobileNetV3_Large, self).__init__()
-        self.conv1 = nn.Conv2d(8, 16, kernel_size=3, stride=2, padding=1, bias=False)
+        self.conv1 = nn.Conv2d(input_channel, 16, kernel_size=3, stride=2, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(16)
         self.hs1 = hswish()
 
@@ -408,7 +408,7 @@ class MobileNetV3_Large(nn.Module):
         out = self.hs1(self.bn1(self.conv1(x)))
         out = self.bneck(out)
         out = self.hs2(self.bn2(self.conv2(out)))
-        out = F.avg_pool2d(out, 2)
+        out = nn.AdaptiveAvgPool2d((1, 1))(out)
         out = out.view(out.size(0), -1)
         out = self.hs3(self.bn3(self.linear3(out)))
         out = self.linear4(out)
