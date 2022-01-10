@@ -13,9 +13,9 @@
 
 ### Task3-5
 
-- [x] RGBD+vision model 3: 84% 4: wt88.78, wb89.95 h88.12 5: 67.68
+- [x] RGBD+vision model 3: 84%(85%-86% ) 4: wt88.78, wb89.95 h88.12 5: 67.68
 - [ ] RGB(ImageNet pretrain) + PointCloud
-- [ ] PointCloud+semantic feature (Modify conv layers)
-- [ ] Dimension -> Capacity
+- [ ] ~~PointCloud+semantic feature (Modify conv layers)~~
+- [ ] Dimension -> Capacity 86%
 - [ ] Dimension + Capacity -> mass
 - [ ] Transfer learning
