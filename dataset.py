@@ -1,4 +1,5 @@
 import numpy as np
+import cv2
 import torch
 import os
 from torch.utils.data import Dataset
@@ -6,13 +7,41 @@ from tqdm.notebook import tqdm
 from PIL import Image
 from torchvision import datasets, transforms
 
+def randomlyAug(crop, depth, label, max_val=640):
+  h, w, c = crop.shape
+
+  if h >= w:
+    max_dim = h
+  else:
+    max_dim = w
+  max_rand = max_val / max_dim
+
+  rand_num = np.random.uniform(0.5,max_rand,1).item()
+
+  width = int(w * rand_num)
+  height = int(h * rand_num)
+  dim = (width, height)
+    
+  # resize image
+  crop = cv2.resize(crop, dim, interpolation = cv2.INTER_AREA)
+  depth = cv2.resize(depth, dim, interpolation = cv2.INTER_NEAREST)[:, :, np.newaxis]
+
+  label *= (height / h)
+
+  
+  
+  return crop, depth, label
+ 
+
+
+
 def get_annotation(id,input,anno_path='/content/labels'):
     anno = np.load(os.path.join(anno_path,'{:06d}.npy'.format(id)),allow_pickle=True).item()
     return anno.get(input)
-
+    
 
 class MiniDataset(Dataset):
-    def __init__(self, base_p, label_f, depth, crops_rgb_f, label_name=['container capacity']):
+    def __init__(self, base_p, label_f, depth, crops_rgb_f, aug=False, label_name=['container capacity']):
       self.label_f = label_f #_f = folder
       self.depth = depth
       self.base = base_p
@@ -25,6 +54,7 @@ class MiniDataset(Dataset):
                                              transforms.ToTensor(),
                                              transforms.ConvertImageDtype(torch.float),
                                              ])
+      self.aug = aug
     def __len__(self):
       return len(self.ids)
 
@@ -36,6 +66,11 @@ class MiniDataset(Dataset):
       
       # rgb_cropped
       crop = np.asarray(Image.open(os.path.join(self.crops_rgb_f,'{:06d}.png'.format(id_))))
+      # label
+      label = np.array([get_annotation(id_,name,os.path.join(self.base, 'labels')) for name in self.label_name])
+
+      if self.aug:
+          crop, depth, label = randomlyAug(crop, depth, label, max_val=640)
 
       h, w, c = crop.shape
 
@@ -59,8 +94,7 @@ class MiniDataset(Dataset):
       image = Image.fromarray(np.concatenate((crop, depth), axis=2))
       image = padding(image)
       image = self.transform(image)
-      # label
-      label = np.array([get_annotation(id_,name,os.path.join(self.base, 'labels')) for name in self.label_name])
+      
 
       return image, label
 
