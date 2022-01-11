@@ -17,5 +17,6 @@
 - [ ] RGB(ImageNet pretrain) + PointCloud
 - [ ] ~~PointCloud+semantic feature (Modify conv layers)~~
 - [ ] Dimension -> Capacity 86%
-- [ ] Dimension + Capacity -> mass
+- [ ] Dimension + Capacity -> mass 73.5%
 - [ ] Transfer learning
+- [ ] Data augmentation 80.23% +Coordinate attention 83.38%
