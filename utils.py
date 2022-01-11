@@ -5,6 +5,7 @@ from tqdm.notebook import tqdm
 import time
 import torch
 import json
+import cv2
 
 def voting(audio_folder, voting_dir, model_pretrained, device, save_size=64):
     mfcc_MAX_VALUE=194.19187653405487
@@ -109,9 +110,6 @@ def audioPreprocessing_t1(audio_folder, gt,T2_mid_dir, T2_pred_dir, model, devic
       pbar.update()
 
 
-
-
-
 def audioPreprocessing(audio_folder, gt, base_path, mfcc_path):
     audio_paths = [os.path.join(audio_folder, path) for path in sorted(os.listdir(audio_folder))]
     save_size=64
@@ -132,6 +130,9 @@ def audioPreprocessing(audio_folder, gt, base_path, mfcc_path):
       mfcc = ap.calc_MFCC()
       raw_frames = ap.cal_frames()
       mfcc_length=mfcc.shape[0]
+      
+      video_name = os.path.join(video_folder,'{:06d}.mp4'.format(id)) # modify the video name here
+      video_frame_list = find_corres_video_frame(video_name,mfcc_length,ap.frame_step,ap.frame_length,signal.shape[0])
     
       if mfcc_length < save_size:
         print("file {} is too short".format(id))
@@ -142,6 +143,7 @@ def audioPreprocessing(audio_folder, gt, base_path, mfcc_path):
     
         for i in range(save_mfcc_num):
           count += 1
+          frame = video_frame_list[i] # extract the corresponding frame here
           tmp_mfcc = mfcc[i*f_step:save_size+i*f_step,: ,:]
           if start_time == -1:
               pouring_or_shaking_list.append(0)
@@ -223,3 +225,26 @@ class AudioProcessing():
             for k in range(f_m, f_m_plus):
                 fbank[m - 1, k] = (bin[m + 1] - k) / (bin[m + 1] - bin[m])
         return fbank
+
+
+def find_corres_video_frame(video_name,mfcc_length,frame_step,frame_length,signal_length):
+    '''
+    Args:
+        video name
+        mfcc_length : mfcc.shape[0]
+        frame_step : 441 if stride_t = 0.01s
+        frame_length : 1102 if frame_length_t = 0.25s
+        signal_length: signal.shape[0]
+
+    '''
+    capture = cv2.VideoCapture(video_name)
+    total_frame = capture.get(cv2.CAP_PROP_FRAME_COUNT)
+    video_frame_list = []
+    for n in range(mfcc_length):
+        mid_point = total_frame * (frame_length/2 + frame_step*n) / signal_length
+        video_frame_num = round(mid_point)
+        capture.set(1, video_frame_num)
+        success, image = capture.read()
+        image = cv2.cvtColor(image,cv2.COLOR_BGR2RGB)
+        video_frame_list.append(image)
+    return np.array(video_frame_list)
