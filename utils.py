@@ -83,6 +83,9 @@ def audioPreprocessing_t1(audio_folder, gt,T2_mid_dir, T2_pred_dir, model, devic
       ap = AudioProcessing(sample_rate,signal,nfilt=save_size)
       mfcc = ap.calc_MFCC()
       mfcc_length=mfcc.shape[0]
+      
+      video_name = os.path.join(video_folder,'{:06d}.mp4'.format(id)) # modify the video name here
+      video_frame_list = find_corres_video_frame(video_name,mfcc_length,ap.frame_step,ap.frame_length,signal.shape[0])
     
       if mfcc_length < save_size:
         print("file {} is too short".format(id))
@@ -92,6 +95,7 @@ def audioPreprocessing_t1(audio_folder, gt,T2_mid_dir, T2_pred_dir, model, devic
         save_mfcc_num=int(np.ceil(float(np.abs(mfcc_length - save_size)) / f_step))
     
         for i in range(save_mfcc_num):
+          frame = video_frame_list[i] # extract the corresponding frame here
           tmp_mfcc = mfcc[i*f_step:save_size+i*f_step,: ,:]
           tmp_mfcc= (tmp_mfcc-MIN_VALUE)/(MAX_VALUE-MIN_VALUE)
           tmp_mfcc=tmp_mfcc.transpose(2,0,1)
@@ -130,10 +134,7 @@ def audioPreprocessing(audio_folder, gt, base_path, mfcc_path):
       mfcc = ap.calc_MFCC()
       raw_frames = ap.cal_frames()
       mfcc_length=mfcc.shape[0]
-      
-      video_name = os.path.join(video_folder,'{:06d}.mp4'.format(id)) # modify the video name here
-      video_frame_list = find_corres_video_frame(video_name,mfcc_length,ap.frame_step,ap.frame_length,signal.shape[0])
-    
+
       if mfcc_length < save_size:
         print("file {} is too short".format(id))
       else:
@@ -143,7 +144,6 @@ def audioPreprocessing(audio_folder, gt, base_path, mfcc_path):
     
         for i in range(save_mfcc_num):
           count += 1
-          frame = video_frame_list[i] # extract the corresponding frame here
           tmp_mfcc = mfcc[i*f_step:save_size+i*f_step,: ,:]
           if start_time == -1:
               pouring_or_shaking_list.append(0)
