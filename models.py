@@ -5,11 +5,11 @@ from torch.nn import init
 import math
 
 
-class CNN_LSTM(nn.Module):
-  def __init__(self):
+class CNN_LSTM_att(nn.Module):
+  def __init__(self, input_size=1792):
     super(CNN_LSTM, self).__init__()
     #self.proj = nn.Linear(1792, 512)
-    self.lstm = nn.LSTM(input_size=1792, hidden_size=256, num_layers=3, dropout=0.15, bidirectional=True)
+    self.lstm = nn.LSTM(input_size=input_size, hidden_size=256, num_layers=3, dropout=0.15, bidirectional=True)
     self.fc1 = nn.Linear(512, 128)
     self.fc2 = nn.Linear(128, 3)
   
@@ -45,10 +45,10 @@ class CNN_LSTM(nn.Module):
 
 
 class CNN_LSTM(nn.Module):
-  def __init__(self):
+  def __init__(self, input_size=1792):
     super(CNN_LSTM, self).__init__()
     #self.proj = nn.Linear(1792, 512)
-    self.lstm = nn.LSTM(input_size=1792, hidden_size=256, num_layers=3, dropout=0.15, bidirectional=True)
+    self.lstm = nn.LSTM(input_size=input_size, hidden_size=256, num_layers=3, dropout=0.15, bidirectional=True)
     self.fc1 = nn.Linear(512, 128)
     self.fc2 = nn.Linear(128, 3)
 
@@ -414,6 +414,17 @@ class MobileNetV3_Large(nn.Module):
         out = self.hs3(self.bn3(self.linear3(out)))
         out = self.linear4(out)
         return out
+    
+    def extract(self, x):
+        out = self.hs1(self.bn1(self.conv1(x)))
+        out = self.bneck(out)
+        out = self.hs2(self.bn2(self.conv2(out)))
+        out = nn.AdaptiveAvgPool2d((1, 1))(out)
+        feature = out.view(out.size(0), -1)
+        out = self.hs3(self.bn3(self.linear3(feature)))
+        out = self.linear4(out)
+
+        return feature, out
 
 
 
@@ -739,6 +750,16 @@ class MBV2_CA(nn.Module):
         x = self.classifier(x)
 
         return x
+    
+    def extract(self, x):
+        x = self.features(x)
+        x = self.conv(x)
+        x = self.avgpool(x)
+        feature = x.view(x.size(0), -1)
+        x = self.classifier(feature)
+
+        return feature, x
+
 
     def _initialize_weights(self):
         for m in self.modules():
