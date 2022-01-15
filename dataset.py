@@ -7,7 +7,7 @@ from tqdm.notebook import tqdm
 from PIL import Image
 from torchvision import datasets, transforms
 
-def randomlyAug(crop, depth, label, max_val=640):
+def randomlyAug(crop, depth, label, max_val=640, square=False, normal=False):
   h, w, c = crop.shape
 
   if h >= w:
@@ -16,7 +16,16 @@ def randomlyAug(crop, depth, label, max_val=640):
     max_dim = w
   max_rand = max_val / max_dim
 
-  rand_num = np.random.uniform(0.5,max_rand,1).item()
+  if not normal:
+      rand_num = np.random.uniform(0.5,max_rand,1).item()
+  else:
+      rand_num = np.random.randn() + 1
+
+      while rand_num < 0.5 or rand_num > max_rand:
+          rand_num = np.random.randn() + 1
+
+
+      
 
   width = int(w * rand_num)
   height = int(h * rand_num)
@@ -26,7 +35,10 @@ def randomlyAug(crop, depth, label, max_val=640):
   crop = cv2.resize(crop, dim, interpolation = cv2.INTER_AREA)
   depth = cv2.resize(depth, dim, interpolation = cv2.INTER_NEAREST)[:, :, np.newaxis]
 
-  label *= (height / h)
+  if square:
+      label *= (height / h)**2
+  else:
+      label *= (height / h)
 
   
   
@@ -41,7 +53,7 @@ def get_annotation(id,input,anno_path='/content/labels'):
     
 
 class MiniDataset(Dataset):
-    def __init__(self, base_p, label_f, depth, crops_rgb_f, aug=False, label_name=['container capacity']):
+    def __init__(self, base_p, label_f, depth, crops_rgb_f, aug=False, square=False, normal=False, label_name=['container capacity']):
       self.label_f = label_f #_f = folder
       self.depth = depth
       self.base = base_p
@@ -55,6 +67,8 @@ class MiniDataset(Dataset):
                                              transforms.ConvertImageDtype(torch.float),
                                              ])
       self.aug = aug
+      self.square = square
+      self.normal = normal
     def __len__(self):
       return len(self.ids)
 
@@ -70,7 +84,7 @@ class MiniDataset(Dataset):
       label = np.array([get_annotation(id_,name,os.path.join(self.base, 'labels')) for name in self.label_name])
 
       if self.aug:
-          crop, depth, label = randomlyAug(crop, depth, label, max_val=640)
+          crop, depth, label = randomlyAug(crop, depth, label, max_val=640, square=self.square, normal=self.normal)
 
       h, w, c = crop.shape
 
