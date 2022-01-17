@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from loss import computeScoreType1
+import numpy as np
 
 def train_audio(model, train_loader, optimizer, device, criterion = nn.CrossEntropyLoss()):
   model.train()
@@ -109,3 +110,35 @@ def evaluate_image(model, testloader, device, criterion = nn.L1Loss()):
 
   
   return loss_test, correct_test
+
+
+def evaluate_var(model, testloader, device, criterion = nn.L1Loss()):
+  model.eval()
+  loss_test = 0
+  correct_test=0
+  num_val = len(testloader)
+  results = {}
+  variance = 0
+  with torch.no_grad():
+    for batch_idx, (audio, target) in enumerate(testloader):
+      audio = audio.to(device)
+      target = target.to(device)
+      outputs = model.forward(audio)
+      loss = criterion(outputs, target)
+      loss_test += loss.item() * audio.shape[0]
+      correct_test += computeScoreType1(target, outputs) * audio.shape[0]
+
+      for i, c in enumerate(target):
+        c = c.item()
+        if c not in results.keys():
+          results[c] = [outputs[i].item()]
+        else:
+          results[c].append(outputs[i].item())
+
+    for k in results.keys():
+      variance += np.mean(abs(np.array(results[c]) - k)**2).item()
+
+    
+    variance /= len(results.keys())
+  
+  return loss_test, correct_test, variance
