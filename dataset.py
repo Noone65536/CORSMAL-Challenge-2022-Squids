@@ -3,7 +3,7 @@ import cv2
 import torch
 import os
 from torch.utils.data import Dataset
-from tqdm.notebook import tqdm
+from tqdm import tqdm
 from PIL import Image
 from torchvision import datasets, transforms
 
@@ -81,7 +81,7 @@ class MiniDataset(Dataset):
       # rgb_cropped
       crop = np.asarray(Image.open(os.path.join(self.crops_rgb_f,'{:06d}.png'.format(id_))))
       # label
-      label = np.array([get_annotation(id_,name,os.path.join(self.base, 'labels')) for name in self.label_name])
+      label = np.array([get_annotation(id_,name,os.path.join(self.base, 'labels')) for name in self.label_name]).astype(np.float)
 
       if self.aug:
           crop, depth, label = randomlyAug(crop, depth, label, max_val=640, square=self.square, normal=self.normal)
