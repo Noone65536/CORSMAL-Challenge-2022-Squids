@@ -41,7 +41,7 @@ def voting(audio_folder, voting_dir, model_pretrained, device, save_size=64):
             _,pred_T2=torch.max(pred_T2,1)
             count_pred[pred_T2.item()]+=1
             pred_list.append(pred_T2.item())
-      if  count_pred[1]>5 or count_pred[2]>5 or count_pred[3]>5:
+      if  count_pred[1]>=5 or count_pred[2]>=5 or count_pred[3]>=5:
         final_pred_T2=count_pred[1:4].index(max(count_pred[1:4]))+1
       else:
         final_pred_T2=0
