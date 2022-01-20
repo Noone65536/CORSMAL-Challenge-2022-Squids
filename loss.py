@@ -7,8 +7,6 @@ def computeScoreType1(gt, _est):
   _est = _est.cpu().data.numpy()
   est = copy.deepcopy(_est)
   assert (len(gt) == len(est))
-  if all(x == -1 for x in est):
-    return 0
   indicator_f = est > -1
   ec = np.exp(-(np.abs(gt - est) / gt)) * indicator_f
   score = np.sum(ec) / len(gt)
@@ -19,3 +17,4 @@ def myLoss(est, gt):
   score = torch.sum(ec) / len(gt)
 
   return score
+

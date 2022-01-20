@@ -2,12 +2,13 @@ import numpy as np
 import cv2
 import torch
 import os
+import scipy.stats as stats
 from torch.utils.data import Dataset
 from tqdm import tqdm
 from PIL import Image
 from torchvision import datasets, transforms
 
-def randomlyAug(crop, depth, label, max_val=640, square=False, normal=False):
+def randomlyAug(crop, depth, label, max_val=640, square=False, normal=False, depth_aug=False):
   h, w, c = crop.shape
 
   if h >= w:
@@ -16,13 +17,20 @@ def randomlyAug(crop, depth, label, max_val=640, square=False, normal=False):
     max_dim = w
   max_rand = max_val / max_dim
 
+  lower, upper = 0.5, 1.5
+  if upper > max_rand:
+      upper = max_rand
+  mu, sigma = 1, 0.5
+  X = stats.truncnorm(
+    (lower - mu) / sigma, (upper - mu) / sigma, loc=mu, scale=sigma)
+
   if not normal:
       rand_num = np.random.uniform(0.5,max_rand,1).item()
   else:
-      rand_num = np.random.randn() + 1
+      rand_num = X.rvs(1).item()
 
-      while rand_num < 0.5 or rand_num > max_rand:
-          rand_num = np.random.randn() + 1
+      while rand_num < lower or rand_num > upper:
+          rand_num = X.rvs(1).item()
 
 
       
@@ -39,6 +47,28 @@ def randomlyAug(crop, depth, label, max_val=640, square=False, normal=False):
       label *= (height / h)**2
   else:
       label *= (height / h)
+  
+  # depth aug
+
+  lower, upper = 0.8, 1.2
+
+  mu, sigma = 1, 0.5
+  X = stats.truncnorm(
+    (lower - mu) / sigma, (upper - mu) / sigma, loc=mu, scale=sigma)
+
+  if depth_aug:
+      rand_num = X.rvs(1).item()
+
+      while rand_num < lower or rand_num > upper:
+              rand_num = X.rvs(1).item()
+      
+      depth = (depth * rand_num).astype(np.uint8)
+    
+      if square:
+          label *= rand_num**2
+      else:
+          label *= rand_num
+
 
   
   
@@ -53,7 +83,7 @@ def get_annotation(id,input,anno_path='/content/labels'):
     
 
 class MiniDataset(Dataset):
-    def __init__(self, base_p, label_f, depth, crops_rgb_f, aug=False, square=False, normal=False, label_name=['container capacity']):
+    def __init__(self, base_p, label_f, depth, crops_rgb_f, aug=False, square=False, normal=False, depth_aug=False, label_name=['container capacity']):
       self.label_f = label_f #_f = folder
       self.depth = depth
       self.base = base_p
@@ -69,6 +99,7 @@ class MiniDataset(Dataset):
       self.aug = aug
       self.square = square
       self.normal = normal
+      self.depth_aug = depth_aug
     def __len__(self):
       return len(self.ids)
 
@@ -84,7 +115,7 @@ class MiniDataset(Dataset):
       label = np.array([get_annotation(id_,name,os.path.join(self.base, 'labels')) for name in self.label_name]).astype(np.float)
 
       if self.aug:
-          crop, depth, label = randomlyAug(crop, depth, label, max_val=640, square=self.square, normal=self.normal)
+          crop, depth, label = randomlyAug(crop, depth, label, max_val=640, square=self.square, normal=self.normal, depth_aug=self.depth_aug)
 
       h, w, c = crop.shape
 
