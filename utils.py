@@ -18,6 +18,7 @@ def voting(audio_folder, voting_dir, model_pretrained, device, save_size=64):
     audio_paths = [os.path.join(audio_folder, path) for path in sorted(os.listdir(audio_folder))]
     save_data = {}
     data_num = 0
+    filling_type_list = []
     for i, path in enumerate(audio_paths):
       count_pred = [0] * 4
       pred_list = []
@@ -46,6 +47,8 @@ def voting(audio_folder, voting_dir, model_pretrained, device, save_size=64):
       else:
         final_pred_T2=0
       
+      filling_type_list.append(final_pred_T2)
+      
       file_name = path.split(os.path.sep)[-1].replace('.wav', '')
       #print("sequence:{}, frequency:{}".format(file_name, count_pred))
       to_save_data = {"data_num":data_num,
@@ -60,6 +63,8 @@ def voting(audio_folder, voting_dir, model_pretrained, device, save_size=64):
       json.dump(save_data, f, indent=2, ensure_ascii=False)
       elapsed_time = time.time() - start
       print("elapsed_time:{}".format(elapsed_time) + "sec")
+    
+    return filling_type_list
 
 
 def audioPreprocessing_t1(audio_folder, gt,T2_mid_dir, T2_pred_dir, model, device):
