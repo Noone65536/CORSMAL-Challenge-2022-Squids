@@ -269,3 +269,43 @@ class MyLSTMDataset(torch.utils.data.Dataset):
         each_class_avg_len =  np.array(self.each_class_sum)/np.array(self.each_class_size)
         all_class_avg_len = np.sum(np.array(self.each_class_sum))/np.sum(np.array(self.each_class_size))
         return each_class_avg_len, all_class_avg_len
+    
+class BatchProcess(Dataset):
+    """
+    type  = train or test   
+    """
+    def __init__(self,rgbs,depths):
+        
+        self.rgbs = rgbs
+        self.depths = depths
+        self.transform = transforms.Compose([transforms.Resize((320, 320)),
+                                             transforms.ToTensor(),
+                                             transforms.ConvertImageDtype(torch.float),
+                                             ])
+
+    def __len__(self):
+        return len(self.rgbs)
+
+    def __getitem__(self, idx):
+    
+        depth = np.asarray(self.depths[idx])[:,:,np.newaxis]
+
+        # rgb_cropped
+        crop = np.asarray(self.rgbs[idx])
+        h, w, c = crop.shape
+        resX = 640 - h
+        resY = 640 - w
+        up = resX // 2
+        down = up
+        if resX % 2 != 0:
+            down +=1
+        left = resY // 2
+        right = left
+        if resY % 2 != 0:
+            left += 1
+        padding = transforms.Pad((left, up, right, down))
+        image = Image.fromarray(np.concatenate((crop, depth), axis=2))
+        image = padding(image)
+        image = self.transform(image)
+
+        return image

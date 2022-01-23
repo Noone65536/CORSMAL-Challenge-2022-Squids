@@ -6,6 +6,8 @@ import time
 import torch
 import json
 import cv2
+import copy
+
 
 def voting(audio_folder, voting_dir, model_pretrained, device, save_size=64):
     mfcc_MAX_VALUE=194.19187653405487
@@ -253,3 +255,222 @@ def find_corres_video_frame(video_name,mfcc_length,frame_step,frame_length,signa
         image = cv2.cvtColor(image,cv2.COLOR_BGR2RGB)
         video_frame_list.append(image)
     return np.array(video_frame_list)
+
+def extract_frames(video_name):
+
+    assert(os.path.exists(video_name))
+    capture = cv2.VideoCapture(video_name)
+    total_frames = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
+    frame_list=[]
+    num_list=[]
+    for i in range(total_frames-1):
+        success, image = capture.read()
+        frame_list.append(cv2.cvtColor(image,cv2.COLOR_BGR2RGB))
+        num_list.append(i)
+    return frame_list, num_list
+
+def extract_depths(name,nums,path):
+    depths_list = []
+    for i in nums:
+        depth_frame_name = os.path.join(path,name,'{:04d}.png'.format(i))
+        depth_frame = cv2.imread(depth_frame_name)
+        depths_list.append(depth_frame)
+    return depths_list
+
+def extract_depths_all(name,nums,path):
+    depths_list = []
+    depths = os.listdir(os.path.join(path,name))
+    for depth in depths:
+        depth_frame_name = os.path.join(path,name,depth)
+        depth_frame = cv2.imread(depth_frame_name)
+        depths_list.append(depth_frame)
+    return depths_list
+
+def extract_frames_sample(video_name,sample_number=10):
+    """
+    Args:
+        video_name
+        sample_number: how many frames wish to extract
+    
+    return:
+        frames : list of all the frames in BGR format
+        frame_numbers :list of the index of each extracted frames
+    """
+    assert(os.path.exists(video_name))
+    capture = cv2.VideoCapture(video_name)
+    frames = []
+    
+    total_frames = capture.get(cv2.CAP_PROP_FRAME_COUNT)
+    frame_nums = list(range(0,int(total_frames),int(round(total_frames/sample_number))))
+    frame_nums_success = []
+    
+    capture.set(1, 0)
+    success, image = capture.read()
+    frames.append(image)
+    frame_nums_success.append(0)
+
+    capture.set(1, total_frames-1)
+    success, image = capture.read()
+    frames.append(image)
+    frame_nums_success.append(total_frames-1)
+
+    for i in frame_nums:
+        capture.set(1, i)
+        success, image = capture.read()
+        if success:
+            frames.append(image)
+            frame_nums_success.append(i)
+    
+    return frames,frame_nums_success
+
+def crop_depth_image(image,xmin,ymin,xmax,ymax,margin=0.05):
+    """
+    corp the depth image
+    """
+    image = image[int(ymin*(1.-margin)):int(ymax*(1.+margin)),int(xmin*(1. - margin)):int(xmax*(1. + margin))]
+    image = image[:,:,0]
+    return image
+
+def crop_rgb_image(image,xmin,ymin,xmax,ymax,margin=0.05):
+    """
+    corp the depth image
+    """
+    image = image[int(ymin*(1.-margin)):int(ymax*(1.+margin)),int(xmin*(1. - margin)):int(xmax*(1. + margin))]
+    
+    return image
+
+def crop_images(results,frames,depths,object_list):
+    
+    results = results.pandas().xyxy
+    cropped_rgb_list=[]
+    cropped_depth_list=[]
+    
+    for i in range(len(results)):
+        p = results[i]
+        p = p[(p.ymax-p.ymin)>100]
+        p = p[p['name'].isin(object_list)]
+        p = p.reset_index(drop=True)
+        
+        if len(p) == 1:  # only detect one
+            cropped_rgb = crop_rgb_image(frames[i],p.xmin.item(),p.ymin.item(),p.xmax.item(),p.ymax.item())
+            cropped__depth = crop_depth_image(depths[i],p.xmin.item(),p.ymin.item(),p.xmax.item(),p.ymax.item())
+            cropped_rgb_list.append(cropped_rgb)
+            cropped_depth_list.append(cropped__depth)
+
+        elif len(p) == 2 and p['name'][0] == 'cup' and p['name'][1] == 'cup' : # two cups
+            
+            if p.xmax[0] < p.xmax[1] :
+                cropped_rgb = crop_rgb_image(frames[i],p.xmin[1],p.ymin[1],p.xmax[1],p.ymax[1])
+                cropped_depth = crop_depth_image(depths[i],p.xmin[1],p.ymin[1],p.xmax[1],p.ymax[1])
+                cropped_rgb_list.append(cropped_rgb)
+                cropped_depth_list.append(cropped_depth)
+
+            else: # 0>1
+                cropped_rgb = crop_rgb_image(frames[i],p.xmin[0],p.ymin[0],p.xmax[0],p.ymax[0])
+                cropped_depth = crop_depth_image(depths[i],p.xmin[0],p.ymin[0],p.xmax[0],p.ymax[0])
+                cropped_rgb_list.append(cropped_rgb)
+                cropped_depth_list.append(cropped_depth)
+
+        elif (p['name'] == 'wine glass').any(): #  one wine glass and others
+            p = p[p['name'] == 'wine glass']
+            cropped_rgb = crop_rgb_image(frames[i],p.xmin[0],p.ymin[0],p.xmax[0],p.ymax[0])
+            cropped_depth = crop_depth_image(depths[i],p.xmin[0],p.ymin[0],p.xmax[0],p.ymax[0])
+            cropped_rgb_list.append(cropped_rgb)
+            cropped_depth_list.append(cropped_depth)
+    
+        elif (p['name'] == 'cup').any(): #  one cup and others
+            p = p[p['name'] == 'cup']
+            cropped_rgb = crop_rgb_image(frames[i],p.xmin[0],p.ymin[0],p.xmax[0],p.ymax[0])
+            cropped_depth = crop_depth_image(depths[i],p.xmin[0],p.ymin[0],p.xmax[0],p.ymax[0])
+            cropped_rgb_list.append(cropped_rgb)
+            cropped_depth_list.append(cropped_depth)
+        
+        elif len(p) != 0: 
+            cropped_rgb = crop_rgb_image(frames[i],p.xmin[0],p.ymin[0],p.xmax[0],p.ymax[0])
+            cropped_depth = crop_depth_image(depths[i],p.xmin[0],p.ymin[0],p.xmax[0],p.ymax[0])
+            cropped_rgb_list.append(cropped_rgb)
+            cropped_depth_list.append(cropped_depth)
+
+    
+    return cropped_rgb_list,cropped_depth_list
+
+def depth2xyz(depth_map,depth_cam_matrix,flatten=True,depth_scale=1000):
+    fx,fy = depth_cam_matrix[0,0],depth_cam_matrix[1,1]
+    cx,cy = depth_cam_matrix[0,2],depth_cam_matrix[1,2]
+    h,w=np.mgrid[0:depth_map.shape[0],0:depth_map.shape[1]]
+    z=depth_map/depth_scale
+    x=(w-cx)*z/fx
+    y=(h-cy)*z/fy
+    xyz=np.dstack((x,y,z)) if flatten==False else np.dstack((x,y,z)).reshape(-1,3)
+    #xyz=cv2.rgbd.depthTo3d(depth_map,depth_cam_matrix)
+    return xyz
+
+def sample_pointcloud(input):
+    '''
+    input : [npoints,3]
+    '''
+
+def get_annotation(id,input,split):
+    """
+    Args:
+        image id (int)
+        one of the lables to get :
+            'id' 
+            'container capacity'
+            'width at the top'
+            'width at the bottom'
+            'height'
+            'container mass'
+            'filling type'
+            'filling level'
+        path to label folder
+    
+    return:
+        label
+    """
+    anno_path=f'datasets/corsmal_mini/{split}/labels'
+    anno = np.load(os.path.join(anno_path,'{:06d}.npy'.format(id)),allow_pickle=True).item()
+    return anno.get(input)
+
+
+def computeScoreType1(gt, _est): # capacity  mass
+    est = copy.deepcopy(_est)
+    est = est.squeeze(1)
+
+    assert (len(gt) == len(est))
+
+    if all(x == -1 for x in est): # check if there's -1 in est
+        return 0
+
+    indicator_f = est > -1
+
+    ec = np.exp(-(np.abs(gt - est) / gt)) * indicator_f
+
+    score = np.sum(ec) / len(gt)
+	
+    return score
+
+
+def computeScoreType2(gt, _est): # width top, width bottom, height
+
+    est = copy.deepcopy(_est)
+
+    assert (len(gt) == len(est))
+
+    if all(x == -1 for x in est):
+        return 0
+
+    indicator_f = est > -1
+
+    ec = np.zeros(len(est))
+    
+    err_abs = np.abs(est - gt)
+	
+    ec[err_abs < gt] = 1 - err_abs[err_abs < gt]/gt[err_abs < gt]
+    ec[err_abs >= gt] = 0
+
+    ec[(est == 0) * (gt == 0)] = 1
+
+    score = np.sum(ec * indicator_f) / len(gt)
+		
+    return score
