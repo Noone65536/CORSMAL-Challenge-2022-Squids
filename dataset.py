@@ -309,3 +309,64 @@ class BatchProcess(Dataset):
         image = self.transform(image)
 
         return image
+
+class MyLSTMDataset_combine(torch.utils.data.Dataset):
+    def __init__(self,root_pth,label, test=False,transform = None, padding_size = 100):
+        class_num=3
+        self.mid_pth = os.path.join(root_pth,'features', 'T2_mid_test')
+        self.pred_pth = os.path.join(root_pth,'features', 'T2_pred_test')
+        self.video_pth = os.path.join(root_pth,'features_video_test')
+        self.label = label  # gt['filling_level'].to_numpy()
+        self.is_test=test
+        self.each_class_size = []
+        self.each_class_sum = [0]*class_num
+        for i in range(class_num):
+            self.each_class_size.append(np.count_nonzero(self.label==i))
+        mx=0
+        mn=1000
+        len_mx = 0
+        
+        for idx in range(self.label.shape[0]):
+            data=np.load(os.path.join(self.mid_pth, "{0:06d}".format(idx) + '.npy'), allow_pickle=True)
+            self.each_class_sum[self.label[idx]]+=data.shape[0]
+            if data.shape[0] > len_mx:
+                len_mx=data.shape[0]
+            tmp_max=np.max(data)
+            tmp_min=np.min(data)
+            if mx<tmp_max:
+                mx=tmp_max
+            if mn>tmp_min:
+                mn=tmp_min
+        self.mn=mn
+        self.mx=mx
+        self.pad = Padding(padding_size)
+            
+    def __len__(self):
+        return self.label.shape[0]
+    
+    def __getitem__(self, idx):
+        if torch.is_tensor(idx):
+            idx = idx.tolist()
+
+        lbl = -1
+
+        if self.is_test is False:
+            lbl = self.label[idx]
+          
+        data=np.load(os.path.join(self.mid_pth, "{0:06d}".format(idx) + '.npy'), allow_pickle=True)
+        data_video=np.load(os.path.join(self.video_pth, "{0:06d}".format(idx) + '.npy'), allow_pickle=True)
+        pred=np.load(os.path.join(self.pred_pth, "{0:06d}".format(idx) + '.npy'), allow_pickle=True)
+        data = (data-self.mn)/(self.mx-self.mn)
+        data = self.pad(data, pred)
+        data_video =self.pad(self.pad(data, pred), pred)
+        data_combine=np.concatenate((data, data_video),axis=0)
+        data_combine=torch.from_numpy(data_combine.astype(np.float32))
+        return data_combine , lbl
+              
+    def get_each_class_size(self):
+        return np.array(self.each_class_size)
+
+    def get_each_class_avg_len(self):
+        each_class_avg_len =  np.array(self.each_class_sum)/np.array(self.each_class_size)
+        all_class_avg_len = np.sum(np.array(self.each_class_sum))/np.sum(np.array(self.each_class_size))
+        return each_class_avg_len, all_class_avg_len
