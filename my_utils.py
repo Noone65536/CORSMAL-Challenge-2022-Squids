@@ -233,6 +233,85 @@ class AudioProcessing():
                 fbank[m - 1, k] = (bin[m + 1] - k) / (bin[m + 1] - bin[m])
         return fbank
 
+def videoPreprocessing_t1(audio_folder, video_folder, gt):
+    audio_paths = [os.path.join(audio_folder, path) for path in sorted(os.listdir(audio_folder))]
+    save_size=64
+    ratio_step = 0.25
+    count = 0
+    MAX_VALUE=194.19187653405487
+    MIN_VALUE=-313.07119549054045
+    pbar = tqdm(total=len(audio_paths))
+    
+    for i, path in enumerate(audio_paths):
+      id = i
+      start_time = gt[gt.id==id]['start'].item()
+      end_time = gt[gt.id==id]['end'].item()
+      filling_level = gt[gt.id==id]['filling_level'].item()
+      datalist = []
+      predlist = []
+      sample_rate, signal = scipy.io.wavfile.read(path)
+      ap = AudioProcessing(sample_rate,signal,nfilt=save_size)
+      mfcc = ap.calc_MFCC()
+      mfcc_length=mfcc.shape[0]
+      framelist = []
+
+      video_name = os.path.join(video_folder,'{:06d}.mp4'.format(id)) # modify the video name here
+      video_frame_list = find_corres_video_frame_new(video_name,mfcc_length,ap.frame_step,ap.frame_length,signal.shape[0])
+      
+      if mfcc_length < save_size:
+        print("file {} is too short".format(id))
+      else:
+        f_step=int(mfcc.shape[1]*ratio_step)
+        f_length=mfcc.shape[1]
+        save_mfcc_num=int(np.ceil(float(np.abs(mfcc_length - save_size)) / f_step))
+        for i in range(save_mfcc_num):
+          tmp_frame = video_frame_list[i*f_step,: ,:]   
+          framelist.append(tmp_frame)
+      print(len(framelist))
+      np.save(os.path.join('/content/drive/MyDrive/CORSMAL-Challenge-2022-Squids-main/video_frames_test', "{0:06d}".format(id)), framelist)
+      pbar.update()
+
+def videoPreprocessing_feature(video_folder, gt, model, device):
+    video_paths = [os.path.join(video_folder, path) for path in sorted(os.listdir(video_folder))]   
+    
+    for i, path in enumerate(video_paths):
+      id = i
+      datalist = []
+      data =np.load(path)
+      for i in range(data.shape[0]):
+        tmp_data=data[i,:,:,:]
+        
+        tmp_data=tmp_data.transpose(2,0,1)
+        tmp_data=torch.from_numpy(tmp_data.astype(np.float32))
+        tmp_data=torch.unsqueeze(tmp_data, 0)
+        tmp_data = tmp_data.to(device) 
+        feature, pred=model.extract(tmp_data)
+        datalist.append(feature.to('cpu').detach().numpy().copy())
+
+      datalist = np.squeeze(np.array(datalist))    
+      np.save(os.path.join('/content/drive/MyDrive/CORSMAL-Challenge-2022-Squids-main/features_video_test', "{0:06d}".format(id)), datalist)
+
+
+def find_corres_video_frame_new(video_name,mfcc_length,frame_step,frame_length,signal_length):
+
+    capture = cv2.VideoCapture(video_name)
+    total_frame = capture.get(cv2.CAP_PROP_FRAME_COUNT)
+    frames = []
+    for i in range(int(total_frame)):
+        success, image = capture.read()
+        image = cv2.cvtColor(image,cv2.COLOR_BGR2RGB)
+        frames.append(image)
+    
+    video_frame_list = []
+    n = np.linspace(0, mfcc_length-1, mfcc_length)
+    mid_point = total_frame * (frame_length/2 + frame_step*n) / signal_length
+    extract_frame_num = np.round(mid_point).astype(np.int)
+    extract_frame_num[extract_frame_num>=len(frames)] = -1
+    video_frame_list = np.array(frames)[extract_frame_num]
+    
+    return np.array(video_frame_list)
+
+
 
 def find_corres_video_frame(video_name,mfcc_length,frame_step,frame_length,signal_length):
     '''
