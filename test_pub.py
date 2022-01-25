@@ -32,22 +32,22 @@ videos = os.listdir(rgb_path)
 videos.sort()
 
 model3 = mbv2_ca().to(device).eval()
-model3.load_state_dict(torch.load('weights/task3.pth'), strict=True)
+model3.load_state_dict(torch.load('weights/task3-new.pth'), strict=True)
 #'/jmain02/home/J2AD007/txk47/hxw74-txk47/corsmal_challenge/task3/view3_cap10_pre/mobile-ca70.62.pth'
 
 model4 = mbv2_ca().to(device).eval()
-model4.load_state_dict(torch.load('weights/task4.pth'), strict=True)
+model4.load_state_dict(torch.load('weights/task4-new.pth'), strict=True)
 
 model5t = mbv2_ca().to(device).eval()
-model5t.load_state_dict(torch.load('weights/task5_wt.pth'), strict=True)
+model5t.load_state_dict(torch.load('weights/task5_wt-new.pth'), strict=True)
 #/jmain02/home/J2AD007/txk47/hxw74-txk47/corsmal_challenge/task5/wt_Hey_nodepth/mobile-ca90.03.pth'
 
 model5b = mbv2_ca().to(device).eval()
-model5b.load_state_dict(torch.load('weights/task5_wb.pth'), strict=True)
+model5b.load_state_dict(torch.load('weights/task5_wb-new.pth'), strict=True)
 #'/jmain02/home/J2AD007/txk47/hxw74-txk47/corsmal_challenge/task5/wb_Hey_nodepth/mobile-ca88.16.pth'
 
 model5h = mbv2_ca().to(device).eval()
-model5h.load_state_dict(torch.load('weights/task5_h.pth'), strict=True)
+model5h.load_state_dict(torch.load('weights/task5_h-new.pth'), strict=True)
 #'/jmain02/home/J2AD007/txk47/hxw74-txk47/corsmal_challenge/task5/view3_height/mobile-ca89.04.pth'
 
 
