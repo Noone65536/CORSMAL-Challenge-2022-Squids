@@ -1,11 +1,12 @@
 # CORSMAL-Challenge-2022-Squids
 
-Tesing task 3,4,5
-python test_pub.py --dataset [the dataset folder]
+Tesing task 3,4,5:\
+```python test_pub.py --dataset [the dataset folder]```
 
 
-Test task 1,2
-right now the only way is to use the jupyter notebook. Change the filename in the jupyter notebook.
+Test task 1,2:\
+One way is to use the jupyter notebook. Change the filename in the jupyter notebook.\
+From the commend line: ```python CORSMAL_test.py --dataset [the datset folder]```
 
 ### Task2
 
