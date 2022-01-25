@@ -6,8 +6,7 @@ import time
 import torch
 import json
 import cv2
-import copy
-
+import scipy.io.wavfile
 
 def voting(audio_folder, voting_dir, model_pretrained, device, save_size=64):
     mfcc_MAX_VALUE=194.19187653405487
@@ -69,7 +68,23 @@ def voting(audio_folder, voting_dir, model_pretrained, device, save_size=64):
     return filling_type_list
 
 
-def audioPreprocessing_t1(audio_folder, gt,T2_mid_dir, T2_pred_dir, model, device):
+def voting_t1(model, testloader, device):
+  model.eval()
+  loss_test = 0
+  correct_test=0
+  num_val = len(testloader)
+  pred_list = []
+  with torch.no_grad():
+    for batch_idx, (audio, lbl) in enumerate(testloader):
+      audio = audio.to(device)
+      outputs = model.forward(audio)
+      _, preds=torch.max(outputs,1)
+      pred_list.append(preds.item())
+      
+  return pred_list
+
+
+def audioPreprocessing_t1(audio_folder,T2_mid_dir, T2_pred_dir, model, device):
     audio_paths = [os.path.join(audio_folder, path) for path in sorted(os.listdir(audio_folder))]
     save_size=64
     ratio_step = 0.25
@@ -81,9 +96,6 @@ def audioPreprocessing_t1(audio_folder, gt,T2_mid_dir, T2_pred_dir, model, devic
     
     for i, path in enumerate(audio_paths):
       id = i
-      start_time = gt[gt.id==id]['start'].item()
-      end_time = gt[gt.id==id]['end'].item()
-      filling_type = gt[gt.id==id]['filling_type'].item()
       datalist = []
       predlist = []
       sample_rate, signal = scipy.io.wavfile.read(path)
@@ -91,8 +103,6 @@ def audioPreprocessing_t1(audio_folder, gt,T2_mid_dir, T2_pred_dir, model, devic
       mfcc = ap.calc_MFCC()
       mfcc_length=mfcc.shape[0]
       
-      video_name = os.path.join(video_folder,'{:06d}.mp4'.format(id)) # modify the video name here
-      video_frame_list = find_corres_video_frame(video_name,mfcc_length,ap.frame_step,ap.frame_length,signal.shape[0])
     
       if mfcc_length < save_size:
         print("file {} is too short".format(id))
@@ -102,13 +112,13 @@ def audioPreprocessing_t1(audio_folder, gt,T2_mid_dir, T2_pred_dir, model, devic
         save_mfcc_num=int(np.ceil(float(np.abs(mfcc_length - save_size)) / f_step))
     
         for i in range(save_mfcc_num):
-          frame = video_frame_list[i] # extract the corresponding frame here
           tmp_mfcc = mfcc[i*f_step:save_size+i*f_step,: ,:]
           tmp_mfcc= (tmp_mfcc-MIN_VALUE)/(MAX_VALUE-MIN_VALUE)
           tmp_mfcc=tmp_mfcc.transpose(2,0,1)
           audio=torch.from_numpy(tmp_mfcc.astype(np.float32))
           audio=torch.unsqueeze(audio, 0)
           audio = audio.to(device) 
+          print(audio.shape)
           feature, pred=model.extract(audio)
           _,pred=torch.max(pred,1)
           datalist.append(feature.to('cpu').detach().numpy().copy())
@@ -119,7 +129,6 @@ def audioPreprocessing_t1(audio_folder, gt,T2_mid_dir, T2_pred_dir, model, devic
         np.save(os.path.join(T2_pred_dir, "{0:06d}".format(id)), predlist)
     
       pbar.update()
-
 
 def audioPreprocessing(audio_folder, gt, base_path, mfcc_path):
     audio_paths = [os.path.join(audio_folder, path) for path in sorted(os.listdir(audio_folder))]
@@ -141,6 +150,8 @@ def audioPreprocessing(audio_folder, gt, base_path, mfcc_path):
       mfcc = ap.calc_MFCC()
       raw_frames = ap.cal_frames()
       mfcc_length=mfcc.shape[0]
+
+      
 
       if mfcc_length < save_size:
         print("file {} is too short".format(id))
@@ -233,7 +244,7 @@ class AudioProcessing():
                 fbank[m - 1, k] = (bin[m + 1] - k) / (bin[m + 1] - bin[m])
         return fbank
 
-def videoPreprocessing_t1(audio_folder, video_folder, gt):
+def videoPreprocessing_t1(audio_folder, video_folder):
     audio_paths = [os.path.join(audio_folder, path) for path in sorted(os.listdir(audio_folder))]
     save_size=64
     ratio_step = 0.25
@@ -244,11 +255,6 @@ def videoPreprocessing_t1(audio_folder, video_folder, gt):
     
     for i, path in enumerate(audio_paths):
       id = i
-      start_time = gt[gt.id==id]['start'].item()
-      end_time = gt[gt.id==id]['end'].item()
-      filling_level = gt[gt.id==id]['filling_level'].item()
-      datalist = []
-      predlist = []
       sample_rate, signal = scipy.io.wavfile.read(path)
       ap = AudioProcessing(sample_rate,signal,nfilt=save_size)
       mfcc = ap.calc_MFCC()
@@ -268,10 +274,10 @@ def videoPreprocessing_t1(audio_folder, video_folder, gt):
           tmp_frame = video_frame_list[i*f_step,: ,:]   
           framelist.append(tmp_frame)
       print(len(framelist))
-      np.save(os.path.join('/content/drive/MyDrive/CORSMAL-Challenge-2022-Squids-main/video_frames_test', "{0:06d}".format(id)), framelist)
+      np.save(os.path.join('video_frames_test', "{0:06d}".format(id)), framelist)
       pbar.update()
 
-def videoPreprocessing_feature(video_folder, gt, model, device):
+def videoPreprocessing_feature(video_folder, model, device):
     video_paths = [os.path.join(video_folder, path) for path in sorted(os.listdir(video_folder))]   
     
     for i, path in enumerate(video_paths):
@@ -289,7 +295,7 @@ def videoPreprocessing_feature(video_folder, gt, model, device):
         datalist.append(feature.to('cpu').detach().numpy().copy())
 
       datalist = np.squeeze(np.array(datalist))    
-      np.save(os.path.join('/content/drive/MyDrive/CORSMAL-Challenge-2022-Squids-main/features_video_test', "{0:06d}".format(id)), datalist)
+      np.save(os.path.join('features_video_test', "{0:06d}".format(id)), datalist)
 
 
 def find_corres_video_frame_new(video_name,mfcc_length,frame_step,frame_length,signal_length):
@@ -358,6 +364,7 @@ def extract_depths(name,nums,path):
 def extract_depths_all(name,nums,path):
     depths_list = []
     depths = os.listdir(os.path.join(path,name))
+    depths.sort()
     for depth in depths:
         depth_frame_name = os.path.join(path,name,depth)
         depth_frame = cv2.imread(depth_frame_name)
