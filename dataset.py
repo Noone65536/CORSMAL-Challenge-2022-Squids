@@ -1,3 +1,4 @@
+from logging.config import valid_ident
 import numpy as np
 import cv2
 import torch
@@ -311,7 +312,7 @@ class BatchProcess(Dataset):
         return image
 
 class MyLSTMDataset_combine(torch.utils.data.Dataset):
-    def __init__(self,root_pth,label, test=False,transform = None, padding_size = 100):
+    def __init__(self,root_pth,label=None, test=False,transform = None, padding_size = 100):
         class_num=3
         self.mid_pth = os.path.join(root_pth,'features', 'T2_mid_test')
         self.pred_pth = os.path.join(root_pth,'features', 'T2_pred_test')
@@ -326,7 +327,10 @@ class MyLSTMDataset_combine(torch.utils.data.Dataset):
         mn=1000
         len_mx = 0
         
-        for idx in range(self.label.shape[0]):
+        if label is None:
+            self.label = np.zeros((len(os.listdir(self.mid_pth))))
+
+        for idx in range(len(os.listdir(self.mid_pth))):
             data=np.load(os.path.join(self.mid_pth, "{0:06d}".format(idx) + '.npy'), allow_pickle=True)
             self.each_class_sum[self.label[idx]]+=data.shape[0]
             if data.shape[0] > len_mx:
@@ -340,7 +344,7 @@ class MyLSTMDataset_combine(torch.utils.data.Dataset):
         self.mn=mn
         self.mx=mx
         self.pad = Padding(padding_size)
-            
+        
     def __len__(self):
         return self.label.shape[0]
     

@@ -18,7 +18,11 @@ from my_utils import *
 from dataset import *
 from my_models import *
 from helper import train_audio, evaluate_audio
+import argparse
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--dataset',help='folder containt datasets (test_pub)',default = '/jmain02/home/J2AD007/txk47/cxz00-txk47/corsmal/datasets/corsmal_all/test_pub')
+args = parser.parse_args()
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print('Using device:', device)
@@ -33,7 +37,8 @@ model_pretrained.eval()
 
 voting_dir = './results'
 os.makedirs(voting_dir, exist_ok=True)
-audio_folder = '/jmain02/home/J2AD007/txk47/cxz00-txk47/corsmal/datasets/corsmal_all/test_pub/audio'
+audio_folder = os.path.join(args.dataset,'audio')
+#'/jmain02/home/J2AD007/txk47/cxz00-txk47/corsmal/datasets/corsmal_all/test_pub/audio'
 
 tsk2_list = voting(audio_folder, voting_dir, model_pretrained, device, save_size=64)
 
@@ -48,7 +53,8 @@ public_test_set.head()
 public_test_set.to_csv('public_test_set.csv',index=False)
 
 os.makedirs('video_frames_test',exist_ok=True)
-video_folder = '/jmain02/home/J2AD007/txk47/cxz00-txk47/corsmal/datasets/corsmal_all/test_pub/view3/rgb'
+video_folder = os.path.join(args.dataset,'view3','rgb')
+#'/jmain02/home/J2AD007/txk47/cxz00-txk47/corsmal/datasets/corsmal_all/test_pub/view3/rgb'
 videoPreprocessing_t1(audio_folder, video_folder)
 
 mobileNet = 'weights/task1_ve.pth'
@@ -76,11 +82,10 @@ model.eval()
 
 audioPreprocessing_t1(audio_folder,T2_mid_dir, T2_pred_dir, model, device)
 
-gt = pd.read_csv('files/vote1.csv')
 base_path = ''
 path = 'weights/task1_combine.pth'
 model = CNN_LSTM(input_size=1280).to(device)
-test_set = MyLSTMDataset_combine(base_path, gt['filling_level'].to_numpy())
+test_set = MyLSTMDataset_combine(base_path)
 test_loader = DataLoader(test_set,batch_size=1,shuffle=False)
 
 model.load_state_dict(torch.load(path),strict=False)
