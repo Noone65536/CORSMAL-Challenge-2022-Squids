@@ -1,5 +1,8 @@
 # CORSMAL-Challenge-2022-Squids
 
+Tesing task 3,4,5
+python test_pub.py --dataset [the dataset folder]
+
 ### Task2
 
 - [x] Audio processing
