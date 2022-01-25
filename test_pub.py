@@ -16,7 +16,7 @@ import pandas as pd
 OBJECT_LIST = ['vase','cup','book','bottle','laptop','wine glass','surfboard','skateboard']
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset',help='folder containt datasets (test_pub)',default = 'datasets/corsmal_all/test_pub')
+parser.add_argument('--dataset',help='folder containt datasets (test_pub)',default = '/jmain02/home/J2AD007/txk47/cxz00-txk47/corsmal/datasets/corsmal_all/test_pub')
 args = parser.parse_args()
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -30,8 +30,26 @@ yolo.eval()
 #yolo = autobatch(yolo)
 videos = os.listdir(rgb_path)
 videos.sort()
-model = mbv2_ca().to(device)
-model.eval()
+
+model3 = mbv2_ca().to(device).eval()
+model3.load_state_dict(torch.load('weights/task3.pth'), strict=True)
+#'/jmain02/home/J2AD007/txk47/hxw74-txk47/corsmal_challenge/task3/view3_cap10_pre/mobile-ca70.62.pth'
+
+model4 = mbv2_ca().to(device).eval()
+model4.load_state_dict(torch.load('weights/task4.pth'), strict=True)
+
+model5t = mbv2_ca().to(device).eval()
+model5t.load_state_dict(torch.load('weights/task5_wt.pth'), strict=True)
+#/jmain02/home/J2AD007/txk47/hxw74-txk47/corsmal_challenge/task5/wt_Hey_nodepth/mobile-ca90.03.pth'
+
+model5b = mbv2_ca().to(device).eval()
+model5b.load_state_dict(torch.load('weights/task5_wb.pth'), strict=True)
+#'/jmain02/home/J2AD007/txk47/hxw74-txk47/corsmal_challenge/task5/wb_Hey_nodepth/mobile-ca88.16.pth'
+
+model5h = mbv2_ca().to(device).eval()
+model5h.load_state_dict(torch.load('weights/task5_h.pth'), strict=True)
+#'/jmain02/home/J2AD007/txk47/hxw74-txk47/corsmal_challenge/task5/view3_height/mobile-ca89.04.pth'
+
 
 print(f'found {len(videos)} videos')
 
@@ -41,23 +59,14 @@ est_wt= []
 est_wb= []
 est_height= []
 
-def get_est(weight,model,dataloader):
-    weights = torch.load(weight)
-    model.load_state_dict(weights, strict=True)
-    
-    est_list=[]
-    for i,data in enumerate(dataloader,0):
-        data = data.to(device)
-        est = model(data)
-        est_list.append(est.cpu().item())
-    
+def get_est(est_list):
     seq = np.array(est_list)
     mean = np.mean(seq)
     std = np.std(seq)
     finalseq = [x for x in seq if (x>mean-2*std and x<mean+2*std)]
     est_mean = np.mean(finalseq)
     est_mid = np.median(est_list)
-    return est_mean,est_mid
+    return est_mean
 
 with torch.no_grad():
     
@@ -78,31 +87,39 @@ with torch.no_grad():
             est_wt.append(136) # 193 135.0, 80
             est_wb.append(136) # 193 135.0, 80 
             est_height.append(178)  # 241 164.0 131
+            print(f'{video},1600,35,136,136,178',file=open('test_final.txt', 'a'))
         
         else:
             batch = BatchProcess(cropped_rgbs,cropped_depths)
-            dataloader =  DataLoader (batch, batch_size=1, shuffle=False)
-
-            print('estimating Task 3: Capacity ...')
-            est_mean,est_mid = get_est('weights/task3.pth',model,dataloader)
-            est_capacity.append(est_mean)
+            dataloader =  DataLoader (batch, batch_size=8, shuffle=False)
+            ca_l = []
+            mass_l = []
+            wt_l = []
+            wb_l = []
+            h_l = []
             
-            print('estimating Task 4: mass ...')
-            est_mean,est_mid = get_est('weights/task4.pth',model,dataloader)
-            est_mass.append(est_mean)
+            for i,data in enumerate(dataloader,0):
+                data = data.to(device)
+                ca = model3(data)
+                mass = model4(data)
+                wt = model5t(data)
+                wb = model5b(data)
+                h = model5h(data)
 
-            print('estimating Task 5: wideth top ...')
-            est_mean,est_mid = get_est('weights/task5_wt.pth',model,dataloader)
-            est_wt.append(est_mean)
-                 
-            print('estimating Task 5: width bottom ...')
-            est_mean,est_mid = get_est('weights/task5_wb.pth',model,dataloader)
-            est_wb.append(est_mean)
+                ca_l.extend(ca.squeeze(1).cpu())
+                mass_l.extend(mass.squeeze(1).cpu())
+                wt_l.extend(wt.squeeze(1).cpu())
+                wb_l.extend(wb.squeeze(1).cpu())
+                h_l.extend(h.squeeze(1).cpu())
+            
+            est_capacity.append(get_est(ca_l))
+            est_mass.append(get_est(mass_l))
+            est_wt.append(get_est(wt_l))
+            est_wb.append(get_est(wb_l))
+            est_height.append(get_est(h_l))
 
-            print('estimating Task 5: height ...')
-            est_mean,est_mid = get_est('weights/task5_h.pth',model,dataloader)
-            est_height.append(est_mean)
-
+            print(f'{video},{get_est(ca_l)},{get_est(mass_l)},{get_est(wt_l)},{get_est(wb_l)},{get_est(h_l)}',file=open('test_final.txt', 'a'))
+     
 public_test_set = pd.read_csv('public_test_set.csv')
 
 est_capacity = np.array(est_capacity)
@@ -116,6 +133,7 @@ public_test_set.iloc[:, 2] = est_mass.astype(np.int)
 public_test_set.iloc[:, 13] = est_wt.astype(np.int)
 public_test_set.iloc[:, 14] = est_wb.astype(np.int)
 public_test_set.iloc[:, 15] = est_height.astype(np.int)
+public_test_set.to_csv('public_test_set_final.csv',index=False)
 
     #     
     #     model = torch.hub.load('ultralytics/yolov5', 'yolov5s', autoshape=False)
