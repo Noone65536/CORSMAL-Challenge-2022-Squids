@@ -2,6 +2,8 @@
 
 Tesing task 3,4,5
 python test_pub.py --dataset [the dataset folder]
+Test task 1,2
+right now the only way is to use the jupyter notebook. Change the filename in the jupyter notebook.
 
 ### Task2
 
