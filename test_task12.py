@@ -52,7 +52,7 @@ public_test_set.iloc[:, 6] = (tsk2_np==2).astype(np.int)
 public_test_set.iloc[:, 7] = (tsk2_np==3).astype(np.int)
 public_test_set.iloc[:, 8] = tsk2_np
 public_test_set.head()
-public_test_set.to_csv('public_test_set.csv',index=False)
+public_test_set.to_csv(args.csv,index=False)
 
 os.makedirs('video_frames_test',exist_ok=True)
 video_folder = os.path.join(args.dataset,'view3','rgb')
@@ -102,4 +102,4 @@ public_test_set.iloc[:, 10] = (pred_list==1).astype(np.int)
 public_test_set.iloc[:, 11] = (pred_list==2).astype(np.int)
 public_test_set.iloc[:, 12] = pred_list
 public_test_set.head()
-public_test_set.to_csv('public_test_set.csv',index=False)
+public_test_set.to_csv(args.csv,index=False)

@@ -74,7 +74,7 @@ with torch.no_grad():
     
     for video in tqdm(videos):
         
-        print(f'processing video: {video}')
+        #print(f'processing video: {video}')
         frames,nums = extract_frames(os.path.join(rgb_path,video))
         depths = extract_depths_all(video.split('.')[0],nums,depth_path) 
         
@@ -136,6 +136,8 @@ public_test_set.iloc[:, 13] = est_wt.astype(np.int)
 public_test_set.iloc[:, 14] = est_wb.astype(np.int)
 public_test_set.iloc[:, 15] = est_height.astype(np.int)
 public_test_set.to_csv(args.csv,index=False)
+print(f'writing results to {args.csv}')
+print("Done!")
 
     #     
     #     model = torch.hub.load('ultralytics/yolov5', 'yolov5s', autoshape=False)
