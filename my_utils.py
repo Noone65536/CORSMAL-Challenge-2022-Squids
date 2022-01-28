@@ -9,6 +9,7 @@ import cv2
 import scipy.io.wavfile
 
 def voting(audio_folder, voting_dir, model_pretrained, device, save_size=64):
+    print('Start voting for task2...')
     mfcc_MAX_VALUE=194.19187653405487
     mfcc_MIN_VALUE=-313.07119549054045
 
@@ -20,7 +21,7 @@ def voting(audio_folder, voting_dir, model_pretrained, device, save_size=64):
     save_data = {}
     data_num = 0
     filling_type_list = []
-    for i, path in enumerate(audio_paths):
+    for i, path in enumerate(tqdm(audio_paths)):
       count_pred = [0] * 4
       pred_list = []
       sample_rate, signal = scipy.io.wavfile.read(path)
