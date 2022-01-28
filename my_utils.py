@@ -119,7 +119,6 @@ def audioPreprocessing_t1(audio_folder,T2_mid_dir, T2_pred_dir, model, device):
           audio=torch.from_numpy(tmp_mfcc.astype(np.float32))
           audio=torch.unsqueeze(audio, 0)
           audio = audio.to(device) 
-          print(audio.shape)
           feature, pred=model.extract(audio)
           _,pred=torch.max(pred,1)
           datalist.append(feature.to('cpu').detach().numpy().copy())
@@ -274,7 +273,6 @@ def videoPreprocessing_t1(audio_folder, video_folder):
         for i in range(save_mfcc_num):
           tmp_frame = video_frame_list[i*f_step,: ,:]   
           framelist.append(tmp_frame)
-      print(len(framelist))
       np.save(os.path.join('video_frames_test', "{0:06d}".format(id)), framelist)
       pbar.update()
 
