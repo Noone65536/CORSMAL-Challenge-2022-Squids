@@ -12,7 +12,7 @@
 
 <code>conda activate corsmal-squids</code>
  
-<code>pip install -r requirements</code>
+<code>pip install -r requirements.txt</code>
  
 
 This will create a new conda environment and install all software dependencies.
