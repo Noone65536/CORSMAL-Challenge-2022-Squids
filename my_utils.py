@@ -76,7 +76,7 @@ def voting_t1(model, testloader, device):
   num_val = len(testloader)
   pred_list = []
   with torch.no_grad():
-    for batch_idx, (audio, lbl) in enumerate(testloader):
+    for batch_idx, (audio, lbl) in enumerate(tqdm(testloader)):
       audio = audio.to(device)
       outputs = model.forward(audio)
       _, preds=torch.max(outputs,1)
@@ -254,7 +254,7 @@ def videoPreprocessing_t1(audio_folder, video_folder):
     MIN_VALUE=-313.07119549054045
     pbar = tqdm(total=len(audio_paths))
     
-    for i, path in enumerate(audio_paths):
+    for i, path in enumerate(tqdm(audio_paths)):
       id = i
       sample_rate, signal = scipy.io.wavfile.read(path)
       ap = AudioProcessing(sample_rate,signal,nfilt=save_size)
@@ -281,7 +281,7 @@ def videoPreprocessing_t1(audio_folder, video_folder):
 def videoPreprocessing_feature(video_folder, model, device):
     video_paths = [os.path.join(video_folder, path) for path in sorted(os.listdir(video_folder))]   
     
-    for i, path in enumerate(video_paths):
+    for i, path in enumerate(tqdm(video_paths)):
       id = i
       datalist = []
       data =np.load(path)
