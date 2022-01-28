@@ -4,7 +4,7 @@
 
 0. Clone repository
 
-<code>git clone https://github.com/CORSMAL/ACC</code>
+<code>git clone https://github.com/Noone65536/CORSMAL-Challenge-2022-Squids.git</code>
 
 1. From a terminal or an Anaconda Prompt, go to project's root directory and run:
 
