@@ -22,12 +22,13 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset',help='folder containt datasets (test_pub)',default = '/jmain02/home/J2AD007/txk47/cxz00-txk47/corsmal/datasets/corsmal_all/test_pub')
+parser.add_argument('--csv',help='csv file to write into',default = 'public_test_set.csv')
 args = parser.parse_args()
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print('Using device:', device)
 
-public_test_set = pd.read_csv('public_test_set.csv')
+public_test_set = pd.read_csv(args.csv)
 model_pth = 'weights/task2.pth'
 
 model_pretrained = mbv2_ca(in_c=8, num_classes=4)
@@ -50,7 +51,7 @@ public_test_set.iloc[:, 6] = (tsk2_np==2).astype(np.int)
 public_test_set.iloc[:, 7] = (tsk2_np==3).astype(np.int)
 public_test_set.iloc[:, 8] = tsk2_np
 public_test_set.head()
-public_test_set.to_csv('public_test_set.csv',index=False)
+public_test_set.to_csv(args.csv,index=False)
 
 os.makedirs('video_frames_test',exist_ok=True)
 video_folder = os.path.join(args.dataset,'view3','rgb')
@@ -100,4 +101,4 @@ public_test_set.iloc[:, 10] = (pred_list==1).astype(np.int)
 public_test_set.iloc[:, 11] = (pred_list==2).astype(np.int)
 public_test_set.iloc[:, 12] = pred_list
 public_test_set.head()
-public_test_set.to_csv('public_test_set.csv',index=False)
+public_test_set.to_csv(args.csv,index=False)
