@@ -8,9 +8,12 @@
 
 1. From a terminal or an Anaconda Prompt, go to project's root directory and run:
 
-<code>conda create --name <code>corsmal-squids</code> --file requirements.txt</code>
+<code>conda create --name <code>corsmal-squids</code> 
 
 <code>conda activate corsmal-squids</code>
+ 
+<code>pip install -r requirements.txt</code>
+ 
 
 This will create a new conda environment and install all software dependencies.
 
