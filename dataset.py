@@ -212,10 +212,10 @@ class Padding(object):
             return features
 
 class MyLSTMDataset(torch.utils.data.Dataset):
-    def __init__(self,root_pth,label, test=False,transform = None, padding_size = 100):
+    def __init__(self,root_pth,label=None, test=False,transform = None, padding_size = 100):
         class_num=3
-        self.mid_pth = os.path.join(root_pth, 'T2_mid')
-        self.pred_pth = os.path.join(root_pth, 'T2_pred')
+        self.mid_pth = os.path.join(root_pth,'features', 'T2_mid')
+        self.pred_pth = os.path.join(root_pth,'features', 'T2_pred')
         self.label = label  # gt['filling_level'].to_numpy()
         self.is_test=test
         self.each_class_size = []
