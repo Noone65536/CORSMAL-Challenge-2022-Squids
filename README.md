@@ -11,9 +11,9 @@
 <code>conda create --name corsmal-squids</code> 
 
 <code>conda activate corsmal-squids</code>
- 
+
 <code>pip install -r requirements.txt</code>
- 
+
 
 This will create a new conda environment and install all software dependencies.
 
@@ -42,9 +42,19 @@ Noted that this will generate some folders in the project's root directory:
 
 Arguments: (The same as the Task1 and Task2)
 
-- `--datapath`: Absolute or relative path to dataset you would like to test. Notice that this is the path to the sub-dataset that directly contains the files to be tested, such as `crosmal_datset/train` or `crosmal_datset/test_pub `
-
+- `--datapath`: Absolute or relative path to dataset you would like to test. Notice that this is the path to the sub-dataset that directly contains the files to be tested, such as `corsmal_datset/train` or `corsmal_datset/test_pub `
 - `--csv`: (optional) Absolute or relative path to the csv file. Default output directory is this project's root directory.
+
+
+
+Please note that you may like to try following code for downloading the YOLOv5 weights
+
+```
+import torch
+yolo = torch.hub.load('yolov5','custom', path='yolov5/yolov5s6.pt', source='local', force_reload=True)
+```
+
+
 
 ## Complexity
 
