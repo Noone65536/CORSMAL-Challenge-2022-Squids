@@ -65,9 +65,10 @@ def get_est(est_list):
     seq = np.array(est_list)
     mean = np.mean(seq)
     std = np.std(seq)
-    finalseq = [x for x in seq if (x>mean-2*std and x<mean+2*std)]
+    finalseq = [x for x in seq if (x>=mean-2*std and x<=mean+2*std)]
     est_mean = np.mean(finalseq)
     est_mid = np.median(est_list)
+
     return est_mean
 
 with torch.no_grad():
@@ -121,7 +122,9 @@ with torch.no_grad():
             est_height.append(get_est(h_l))
 
             #print(f'{video},{get_est(ca_l)},{get_est(mass_l)},{get_est(wt_l)},{get_est(wb_l)},{get_est(h_l)}',file=open('test_final.txt', 'a'))
-     
+
+
+
 public_test_set = pd.read_csv(args.csv)
 
 est_capacity = np.array(est_capacity)
