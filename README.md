@@ -25,7 +25,7 @@ This will create a new conda environment and install all software dependencies.
 
 ### Test the Task1 and Task2
 
-![Task12](./Images/Task12.pdf)
+![Task12](./Images/Task12.png)
 
 
 
@@ -55,7 +55,7 @@ Arguments:
 
 ### Test the Task3, Task4 and Task5
 
-![Task12](./Images/Task345.pdf)
+![Task12](./Images/Task345.png)
 
 
 
