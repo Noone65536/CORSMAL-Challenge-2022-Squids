@@ -2,7 +2,7 @@
 
 The CORSMAL challenge focuses on the estimation of the capacity, dimensions, and mass of containers, the type, mass, and filling (percentage of the container with content), and the overall mass of the container and filling. The specific containers and fillings are unknown to the robot: the only prior is a set of object categories (drinking glasses, cups, food boxes) and a set of filling types (water, pasta, rice). [Click here](https://corsmal.eecs.qmul.ac.uk/challenge.html)
 
-
+![TaskOverview](https://corsmal.eecs.qmul.ac.uk/images/challenge/diagram_tasks.png)
 
 ## Installation
 
@@ -24,6 +24,10 @@ This will create a new conda environment and install all software dependencies.
 ## Testing 
 
 ### Test the Task1 and Task2
+
+![Task12](./Images/Task12.pdf)
+
+
 
 <code>python test_task12.py --dataset datapath</code>
 
@@ -49,8 +53,11 @@ Arguments:
 
 - `--csv`: (optional) Absolute or relative path to the csv file. Default output directory is this project's root directory. Please noted that the program reads the csv files and write testing results to the csv file directly. We hope that the indexes and columns of the csv file is the same as the  `task1_audio.csv`
 
-
 ### Test the Task3, Task4 and Task5
+
+![Task12](./Images/Task345.pdf)
+
+
 
 <code>python test_task345.py --dataset datapath</code>
 
