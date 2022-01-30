@@ -1,5 +1,9 @@
 # CORSMAL-Challenge-2022-Squids
 
+The CORSMAL challenge focuses on the estimation of the capacity, dimensions, and mass of containers, the type, mass, and filling (percentage of the container with content), and the overall mass of the container and filling. The specific containers and fillings are unknown to the robot: the only prior is a set of object categories (drinking glasses, cups, food boxes) and a set of filling types (water, pasta, rice). [Click here](https://corsmal.eecs.qmul.ac.uk/challenge.html)
+
+
+
 ## Installation
 
 0. Clone repository
