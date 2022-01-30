@@ -36,6 +36,16 @@ Noted that this will generate some folders in the project's root directory:
 - features_frames_test: frames (.npy)
 - results : results to be calculated as votes (.json)
 
+### Test the Task1 (audio only)
+
+<code>python test_task1_audio.py --dataset datapath</code>
+
+Arguments:
+- `--datapath`: Absolute or relative path to dataset you would like to test. Notice that this is the path to the sub-dataset that directly contains the files to be tested, such as `crosmal_datset/train` or `crosmal_datset/test_pub `
+
+- `--csv`: (optional) Absolute or relative path to the csv file. Default output directory is this project's root directory. Please noted that the program reads the csv files and write testing results to the csv file directly. We hope that the indexes and columns of the csv file is the same as the  `task1_audio.csv`
+
+
 ### Test the Task3, Task4 and Task5
 
 <code>python test_task345.py --dataset datapath</code>
