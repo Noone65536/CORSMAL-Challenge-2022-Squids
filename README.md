@@ -8,26 +8,34 @@ The CORSMAL challenge focuses on the estimation of the capacity, dimensions, and
 
 0. Clone repository
 
-<code>git clone https://github.com/Noone65536/CORSMAL-Challenge-2022-Squids.git</code>
+    <code>git clone https://github.com/Noone65536/CORSMAL-Challenge-2022-Squids.git</code>
 
 1. From a terminal or an Anaconda Prompt, go to project's root directory and run:
 
-<code>conda create --name corsmal-squids</code> 
+    <code>conda create --name corsmal-squids python=3.7</code> 
 
-<code>conda activate corsmal-squids</code>
+    <code>conda activate corsmal-squids</code>
 
-<code>pip install -r requirements.txt</code>
+    <code>pip install -r requirements.txt</code>
 
+    This will create a new conda environment and install all software dependencies. We also provide the .yaml file if you'd like to install packages using conda.
 
-This will create a new conda environment and install all software dependencies.
+2. Install manually  
+If you could not insall packages using requiremens.txt through pip or using environments.yaml through conda,
+you can install packages manually using following instructions:
+
+  -  `conda install pytorch torchvision torchaudio cudatoolkit=10.2 -c pytorch`  
+    you need torchvision>=0.8.  
+  -  `pip install opencv-python`  
+    Do not use "conda" here as "conda" installs opencv3.4 which conflicts with torchvision>0.8  
+  -   Other packages can be installed using:  
+    `conda install scipy tqdm pandas pyyaml requests seaborn matplotlib ipywidgets ipython`
 
 ## Testing 
 
 ### Test the Task1 and Task2
 
 ![Task12](./Images/Task12.png)
-
-
 
 <code>python test_task12.py --dataset datapath</code>
 
