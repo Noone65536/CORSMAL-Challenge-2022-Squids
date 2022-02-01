@@ -23,7 +23,7 @@ args = parser.parse_args()
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 device1 = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
-device2 = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+device2 = torch.device("cuda:2" if torch.cuda.is_available() else "cpu")
 print('Using device:', device)
 print('Using device:', device1)
 print('Using device:', device2)
