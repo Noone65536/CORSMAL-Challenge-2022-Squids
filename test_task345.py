@@ -54,6 +54,7 @@ model5h.load_state_dict(torch.load('weights/task5_h-new.pth'), strict=True)
 
 
 print(f'found {len(videos)} videos')
+public_test_set = pd.read_csv(args.csv)
 
 est_capacity = []
 est_mass= []
@@ -123,9 +124,6 @@ with torch.no_grad():
 
             #print(f'{video},{get_est(ca_l)},{get_est(mass_l)},{get_est(wt_l)},{get_est(wb_l)},{get_est(h_l)}',file=open('test_final.txt', 'a'))
 
-
-
-public_test_set = pd.read_csv(args.csv)
 
 est_capacity = np.array(est_capacity)
 est_mass= np.array(est_mass)
