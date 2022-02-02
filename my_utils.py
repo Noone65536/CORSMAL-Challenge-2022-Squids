@@ -425,7 +425,7 @@ def crop_rgb_image(image,xmin,ymin,xmax,ymax,margin=0.05):
 
 def crop_images(results,frames,depths,object_list):
     
-    results = results.pandas().xyxy
+    #results = results.pandas().xyxy
     cropped_rgb_list=[]
     cropped_depth_list=[]
     

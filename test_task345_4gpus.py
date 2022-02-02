@@ -19,6 +19,8 @@ OBJECT_LIST = ['vase','cup','book','bottle','laptop','wine glass','surfboard','s
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset',help='folder containt datasets (test_pub)',default = '/jmain02/home/J2AD007/txk47/cxz00-txk47/corsmal/datasets/corsmal_all/test_pub')
 parser.add_argument('--csv',help='csv file to write into',default = 'public_test_set.csv')
+parser.add_argument('--bs_yolo',help='batch_size of yolo',default = 128)
+parser.add_argument('--bs_model',help='batch_size of the models',default = 128)
 args = parser.parse_args()
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -56,7 +58,6 @@ model5h = mbv2_ca().to(device2).eval()
 model5h.load_state_dict(torch.load('weights/task5_h-new.pth'), strict=True)
 #'/jmain02/home/J2AD007/txk47/hxw74-txk47/corsmal_challenge/task5/view3_height/mobile-ca89.04.pth'
 
-
 print(f'found {len(videos)} videos')
 public_test_set = pd.read_csv(args.csv)
 
@@ -83,8 +84,12 @@ with torch.no_grad():
         #print(f'processing video: {video}')
         frames,nums = extract_frames(os.path.join(rgb_path,video))
         depths = extract_depths_all(video.split('.')[0],nums,depth_path) 
-        
-        results = yolo(frames)
+        results =[] 
+        for i in range(0,len(frames),args.bs_yolo):
+            frame_batch = frames[i:i+args.bs_yolo]
+            result = yolo(frame_batch)
+            result = result.pandas().xyxy
+            results.extend(result) 
         cropped_rgbs,cropped_depths = crop_images(results,frames,depths,OBJECT_LIST)
         assert(len(cropped_rgbs) == len(cropped_depths))
         
@@ -99,7 +104,7 @@ with torch.no_grad():
         
         else:
             batch = BatchProcess(cropped_rgbs,cropped_depths)
-            dataloader =  DataLoader (batch, batch_size=8, shuffle=False)
+            dataloader =  DataLoader (batch, args.bs_model, shuffle=False)
             ca_l = []
             mass_l = []
             wt_l = []
@@ -128,7 +133,6 @@ with torch.no_grad():
 
             #print(f'{video},{get_est(ca_l)},{get_est(mass_l)},{get_est(wt_l)},{get_est(wb_l)},{get_est(h_l)}',file=open('test_final.txt', 'a'))
 
-
 est_capacity = np.array(est_capacity)
 est_mass= np.array(est_mass)
 est_wt= np.array(est_wt)
@@ -143,6 +147,11 @@ public_test_set.iloc[:, 15] = est_height.astype(np.int)
 public_test_set.to_csv(args.csv,index=False)
 print(f'writing results to {args.csv}')
 print("Done!")
+
+#print(torch.cuda.max_memory_reserved(0)/1024/1024)
+#print(torch.cuda.max_memory_reserved(1)/1024/1024)
+#print(torch.cuda.max_memory_reserved(2)/1024/1024)
+#print(torch.cuda.max_memory_reserved(3)/1024/1024)
 
     #     
     #     model = torch.hub.load('ultralytics/yolov5', 'yolov5s', autoshape=False)

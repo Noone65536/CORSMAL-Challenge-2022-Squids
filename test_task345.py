@@ -19,6 +19,8 @@ OBJECT_LIST = ['vase','cup','book','bottle','laptop','wine glass','surfboard','s
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset',help='folder containt datasets (test_pub)',default = '/jmain02/home/J2AD007/txk47/cxz00-txk47/corsmal/datasets/corsmal_all/test_pub')
 parser.add_argument('--csv',help='csv file to write into',default = 'public_test_set.csv')
+parser.add_argument('--bs_yolo',help='batch_size of yolo',default = 64)
+parser.add_argument('--bs_model',help='batch_size of the models',default = 32)
 args = parser.parse_args()
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -75,12 +77,16 @@ def get_est(est_list):
 with torch.no_grad():
     
     for video in tqdm(videos):
-        
+        #print(torch.cuda.max_memory_reserved(0)/1024/1024)
         #print(f'processing video: {video}')
         frames,nums = extract_frames(os.path.join(rgb_path,video))
         depths = extract_depths_all(video.split('.')[0],nums,depth_path) 
-        
-        results = yolo(frames)
+        results =[] 
+        for i in range(0,len(frames),args.bs_yolo):
+            frame_batch = frames[i:i+args.bs_yolo]
+            result = yolo(frame_batch)
+            result = result.pandas().xyxy
+            results.extend(result) 
         cropped_rgbs,cropped_depths = crop_images(results,frames,depths,OBJECT_LIST)
         assert(len(cropped_rgbs) == len(cropped_depths))
         
@@ -95,7 +101,7 @@ with torch.no_grad():
         
         else:
             batch = BatchProcess(cropped_rgbs,cropped_depths)
-            dataloader =  DataLoader (batch, batch_size=8, shuffle=False)
+            dataloader =  DataLoader (batch, args.bs_model, shuffle=False)
             ca_l = []
             mass_l = []
             wt_l = []
