@@ -226,7 +226,10 @@ class MyLSTMDataset(torch.utils.data.Dataset):
         mn=1000
         len_mx = 0
         
-        for idx in range(self.label.shape[0]):
+        if label is None:
+            self.label = np.zeros((len(os.listdir(self.mid_pth))))
+        
+        for idx in range(len(os.listdir(self.mid_pth))):
             data=np.load(os.path.join(self.mid_pth, "{0:06d}".format(idx) + '.npy'), allow_pickle=True)
             self.each_class_sum[self.label[idx]]+=data.shape[0]
             if data.shape[0] > len_mx:
