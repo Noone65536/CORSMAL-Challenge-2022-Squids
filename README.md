@@ -67,14 +67,15 @@ Arguments:
 
 
 
-<code>python test_task345.py --dataset datapath</code>
+<code>python test_task345.py --dataset datapath</code> or  
+<code>python test_task345_4gpus.py --dataset datapath</code>
 
 Arguments: (The same as the Task1 and Task2)
 
 - `--datapath`: Absolute or relative path to dataset you would like to test. Notice that this is the path to the sub-dataset that directly contains the files to be tested, such as `corsmal_datset/train` or `corsmal_datset/test_pub `
 - `--csv`: (optional) Absolute or relative path to the csv file. Default output directory is this project's root directory.
-
-
+- `--bs_yolo`: (optional) batch_size of the Yolov5 models. Default =64 for single GPU and 128 for 4 GPUs
+- `--bs_model`: (optional) batch_size of the capacity,mass and dimensions estimation model. Deafult=32 for single GPU and 128 for 4 GPUs. 
 
 Please note that you may like to try following code for downloading the YOLOv5 weights
 
@@ -82,8 +83,12 @@ Please note that you may like to try following code for downloading the YOLOv5 w
 import torch
 yolo = torch.hub.load('yolov5','custom', path='yolov5/yolov5s6.pt', source='local', force_reload=True)
 ```
+## GPU Memory and Testing speed
+On our GPU server(Tesla-V100), we use batch_size = 128 for both Yolov5 and our models. It occupied about 6.5G on GPU_0 and 4.5G on both GPU_1 and GPU_2 (zero in GPU_3 as we did not use it). It took about 1 hour to perdict all 228 videos in the CCM test_pub dataset. 
 
+When using single GPU with our deafult batch_size, it occupied about 3GB and took about 4 hours
 
+You can enlarge the batchsize to obtain a higher detection speed.
 
 ## Complexity
 
