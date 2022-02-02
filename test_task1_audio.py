@@ -14,10 +14,11 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from torch.utils.data.dataset import Subset
 import json
-from utils import AudioProcessing, audioPreprocessing, voting, voting_t1
+from my_utils import AudioProcessing, audioPreprocessing, voting, voting_t1
 from dataset import *
-from models import *
+from my_models import *
 from helper import train_audio, evaluate_audio
+import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset',help='folder containt datasets (test_pub)',default = '/jmain02/home/J2AD007/txk47/cxz00-txk47/corsmal/datasets/corsmal_all/test_pub')
@@ -29,7 +30,7 @@ print('Using device:', device)
 
 public_test_set = pd.read_csv(args.csv)
 
-model_pth = './models/task2.pth'
+model_pth = 'weights/task2.pth'
 
 model_pretrained = mbv2_ca(in_c=8, num_classes=4)
 model_pretrained.load_state_dict(torch.load(model_pth))
