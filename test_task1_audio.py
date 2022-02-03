@@ -71,3 +71,4 @@ public_test_set.iloc[:, 10] = (pred_list==1).astype(np.int)
 public_test_set.iloc[:, 11] = (pred_list==2).astype(np.int)
 public_test_set.iloc[:, 12] = pred_list
 public_test_set.to_csv(args.csv,index=False)
+print("test_task1_audio Done!")
