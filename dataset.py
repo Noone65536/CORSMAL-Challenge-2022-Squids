@@ -231,7 +231,7 @@ class MyLSTMDataset(torch.utils.data.Dataset):
         
         for idx in range(len(os.listdir(self.mid_pth))):
             data=np.load(os.path.join(self.mid_pth, "{0:06d}".format(idx) + '.npy'), allow_pickle=True)
-            self.each_class_sum[self.label[idx]]+=data.shape[0]
+            #self.each_class_sum[self.label[idx]]+=data.shape[0]
             if data.shape[0] > len_mx:
                 len_mx=data.shape[0]
             tmp_max=np.max(data)
