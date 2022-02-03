@@ -46,10 +46,10 @@ tsk2_list = voting(audio_folder, voting_dir, model_pretrained, device, save_size
 
 # Save to pandas
 tsk2_np = np.array(tsk2_list)
-public_test_set.iloc[:, 4] = (tsk2_np==0).astype(np.int)
-public_test_set.iloc[:, 5] = (tsk2_np==1).astype(np.int)
-public_test_set.iloc[:, 6] = (tsk2_np==2).astype(np.int)
-public_test_set.iloc[:, 7] = (tsk2_np==3).astype(np.int)
+public_test_set.iloc[:, 4] = (tsk2_np==0).astype(np.int32)
+public_test_set.iloc[:, 5] = (tsk2_np==1).astype(np.int32)
+public_test_set.iloc[:, 6] = (tsk2_np==2).astype(np.int32)
+public_test_set.iloc[:, 7] = (tsk2_np==3).astype(np.int32)
 public_test_set.iloc[:, 8] = tsk2_np
 public_test_set.head()
 public_test_set.to_csv(args.csv,index=False)
@@ -97,9 +97,9 @@ model.eval()
 pred_list = voting_t1(model, test_loader, device)
 pred_list = np.array(pred_list)
 pred_list[tsk2_np==0] = 0
-public_test_set.iloc[:, 9] = (pred_list==0).astype(np.int)
-public_test_set.iloc[:, 10] = (pred_list==1).astype(np.int)
-public_test_set.iloc[:, 11] = (pred_list==2).astype(np.int)
+public_test_set.iloc[:, 9] = (pred_list==0).astype(np.int32)
+public_test_set.iloc[:, 10] = (pred_list==1).astype(np.int32)
+public_test_set.iloc[:, 11] = (pred_list==2).astype(np.int32)
 public_test_set.iloc[:, 12] = pred_list
 public_test_set.head()
 public_test_set.to_csv(args.csv,index=False)
