@@ -310,7 +310,7 @@ def find_corres_video_frame_new(video_name,mfcc_length,frame_step,frame_length,s
     video_frame_list = []
     n = np.linspace(0, mfcc_length-1, mfcc_length)
     mid_point = total_frame * (frame_length/2 + frame_step*n) / signal_length
-    extract_frame_num = np.round(mid_point).astype(np.int)
+    extract_frame_num = np.round(mid_point).astype(np.int32)
     extract_frame_num[extract_frame_num>=len(frames)] = -1
     video_frame_list = np.array(frames)[extract_frame_num]
     
