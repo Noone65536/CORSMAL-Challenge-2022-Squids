@@ -54,7 +54,7 @@ public_test_set.iloc[:, 8] = tsk2_np
 
 
 base_path = ''
-path = 'weight/task1_audio.pth'
+path = 'weights/task1_audio.pth'
 model = CNN_LSTM(input_size=1280).to(device)
 test_set = MyLSTMDataset(base_path)
 test_loader = DataLoader(test_set,batch_size=1,shuffle=False)
