@@ -4,6 +4,12 @@ The CORSMAL challenge focuses on the estimation of the capacity, dimensions, and
 
 ![TaskOverview](https://corsmal.eecs.qmul.ac.uk/images/challenge/diagram_tasks.png)
 
+**Update :**
+
+2022.2.12
+
+The test score has been released, we find that our results contain some problems. We find the reason is that we perform the training on the sampled dataset using YOLOv5 and our training accuracy are obtained per Image, which introduces biases. We have tried our pre-trained model of task3 on whole training set and get the similar low score . We are currently working on re-evaluating our trained models on whole training set instead of per image on our YOLOv5 sampled version. The new pre-trained models will be coming soon...
+
 ## Installation
 
 0. Clone repository
