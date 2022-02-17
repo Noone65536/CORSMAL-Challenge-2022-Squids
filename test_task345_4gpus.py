@@ -48,15 +48,12 @@ model4.load_state_dict(torch.load('weights-new/task4.pth'), strict=True)
 
 model5t = mbv2_ca().to(device1).eval()
 model5t.load_state_dict(torch.load('weights-new/task5-wt.pth'), strict=True)
-#/jmain02/home/J2AD007/txk47/hxw74-txk47/corsmal_challenge/task5/wt_Hey_nodepth/mobile-ca90.03.pth'
 
 model5b = mbv2_ca().to(device2).eval()
 model5b.load_state_dict(torch.load('weights-new/task5-wb.pth'), strict=True)
-#'/jmain02/home/J2AD007/txk47/hxw74-txk47/corsmal_challenge/task5/wb_Hey_nodepth/mobile-ca88.16.pth'
 
 model5h = mbv2_ca().to(device2).eval()
 model5h.load_state_dict(torch.load('weights-new/task5-h.pth'), strict=True)
-#'/jmain02/home/J2AD007/txk47/hxw74-txk47/corsmal_challenge/task5/view3_height/mobile-ca89.04.pth'
 
 print(f'found {len(videos)} videos')
 public_test_set = pd.read_csv(args.csv)
