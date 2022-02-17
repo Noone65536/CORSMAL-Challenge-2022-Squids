@@ -85,8 +85,8 @@ with torch.no_grad():
         frames,nums = extract_frames(os.path.join(rgb_path,video))
         depths = extract_depths_all(video.split('.')[0],nums,depth_path) 
         results =[] 
-        for i in range(0,len(frames),args.bs_yolo):
-            frame_batch = frames[i:i+args.bs_yolo]
+        for i in range(0,len(frames),int(args.bs_yolo)):
+            frame_batch = frames[i:i+int(args.bs_yolo)]
             result = yolo(frame_batch)
             result = result.pandas().xyxy
             results.extend(result) 
@@ -104,7 +104,7 @@ with torch.no_grad():
         
         else:
             batch = BatchProcess(cropped_rgbs,cropped_depths)
-            dataloader =  DataLoader (batch, args.bs_model, shuffle=False)
+            dataloader =  DataLoader (batch, int(args.bs_model), shuffle=False)
             ca_l = []
             mass_l = []
             wt_l = []
