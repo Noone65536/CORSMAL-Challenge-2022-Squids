@@ -1,10 +1,37 @@
-# CORSMAL-Challenge-2022-Squids
+# Improving Generalization of Deep Networks for Estimating Physical Properties of Containers and Fillings
 
 The CORSMAL challenge focuses on the estimation of the capacity, dimensions, and mass of containers, the type, mass, and filling (percentage of the container with content), and the overall mass of the container and filling. The specific containers and fillings are unknown to the robot: the only prior is a set of object categories (drinking glasses, cups, food boxes) and a set of filling types (water, pasta, rice). [Click here](https://corsmal.eecs.qmul.ac.uk/challenge.html)
 
-![TaskOverview](https://corsmal.eecs.qmul.ac.uk/images/challenge/diagram_tasks.png)
+
 
 **Update :**
+
+2022.3.6
+
+We got the test scores of our new models.
+
+| Combined | T3-Capacity                                                  | T4-Mass                                                      | T5 width at top                                              | T5 width at bottom                                           | T5 height                                                    |
+| -------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| Ours-2   | [**71.55**](https://github.com/Noone65536/CORSMAL-Challenge-2022-Squids/blob/main/weights-new/task3.pth) | [58.31](https://github.com/Noone65536/CORSMAL-Challenge-2022-Squids/blob/main/weights-new/task4.pth) | [**82.76**](https://github.com/Noone65536/CORSMAL-Challenge-2022-Squids/blob/main/weights-new/task5-wt.pth) | [**77.48**](https://github.com/Noone65536/CORSMAL-Challenge-2022-Squids/blob/main/weights-new/task5-wb.pth) | [**80.65**](https://github.com/Noone65536/CORSMAL-Challenge-2022-Squids/blob/main/weights-new/task5-h.pth) |
+| Ours     | [59.51](https://github.com/Noone65536/CORSMAL-Challenge-2022-Squids/blob/main/weights/task3-new.pth) | [**58.78**](https://github.com/Noone65536/CORSMAL-Challenge-2022-Squids/blob/main/weights/task4-new.pth) | [80.01](https://github.com/Noone65536/CORSMAL-Challenge-2022-Squids/blob/main/weights/task5_wt-new.pth) | [76.09](https://github.com/Noone65536/CORSMAL-Challenge-2022-Squids/blob/main/weights/task5_wb-new.pth) | [74.33](https://github.com/Noone65536/CORSMAL-Challenge-2022-Squids/blob/main/weights/task5_h-new.pth) |
+
+
+
+| Public test set | T3-Capacity | T4-Mass   | T5 width at top | T5 width at bottom | T5 height |
+| --------------- | ----------- | --------- | --------------- | ------------------ | --------- |
+| Ours-2          | 73.23       | **67.97** | **90.22**       | **83.46**          | **90.84** |
+| Ours            | **75.05**   | 48.65     | 83.08           | 81.31              | 88.74     |
+
+
+
+| Private test set | T3-Capacity | T4-Mass   | T5 width at top | T5 width at bottom | T5 height |
+| ---------------- | ----------- | --------- | --------------- | ------------------ | --------- |
+| Ours-2           | **69.87**   | 48.65     | 75.29           | **71.51**          | **70.45** |
+| Ours             | 43.97       | **62.32** | **76.95**       | 70.87              | 59.93     |
+
+
+
+
 
 2022.2.12
 
@@ -119,4 +146,3 @@ params: 2,671,217 size: 10.7MB
 GPU: Tesla-V100 32G
 
 Operating system: Linux and Colab
-
