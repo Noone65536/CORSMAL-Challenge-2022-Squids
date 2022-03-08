@@ -147,7 +147,8 @@ GPU: Tesla-V100 32G
 
 Operating system: Linux and Colab
 
-# Bibtex
+## Citations
+Please cite this paper if you found it useful in your publications
 ```bibtex
 @inproceedings{wang2022corsmal,
   title={Improving Generalization of Deep Networks for Estimating Physical Properties of Containers and Fillings},
@@ -156,3 +157,5 @@ Operating system: Linux and Colab
   year={2022}
 }
 ```
+## License
+Licensed under the [MIT License](LICENSE)
