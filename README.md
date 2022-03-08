@@ -150,12 +150,9 @@ Operating system: Linux and Colab
 # Bibtex
 ```bibtex
 @inproceedings{wang2022corsmal,
-  title={Improving Generalization of Deep Networks for Estimating Physical Properties of
-Containers and Fillings},
+  title={Improving Generalization of Deep Networks for Estimating Physical Properties of Containers and Fillings},
   author={H. Wang, C.Zhu, Z.Ma, and C.Oh},
-  booktitle={IEEE Int. Conf. Acoustics, Speech
-and Signal Process., Grand Challenges: Audio-Visual Object
-Classification for Human-Robot Collaboration, 2022.},
+  booktitle={IEEE Int. Conf. Acoustics, Speech and Signal Process., Grand Challenges: Audio-Visual Object Classification for Human-Robot Collaboration, 2022.},
   year={2022}
 }
 ```
