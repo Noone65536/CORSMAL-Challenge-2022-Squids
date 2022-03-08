@@ -149,10 +149,13 @@ Operating system: Linux and Colab
 
 # Bibtex
 ```bibtex
-@inproceedings{wen2021bundletrack,
-  title={BundleTrack: 6D Pose Tracking for Novel Objects without Instance or Category-Level 3D Models},
-  author={Wen, B and Bekris, Kostas E},
-  booktitle={IEEE/RSJ International Conference on Intelligent Robots and Systems},
-  year={2021}
+@inproceedings{wang2022corsmal,
+  title={Improving Generalization of Deep Networks for Estimating Physical Properties of
+Containers and Fillings},
+  author={H. Wang, C.Zhu, Z.Ma, and C.Oh},
+  booktitle={IEEE Int. Conf. Acoustics, Speech
+and Signal Process., Grand Challenges: Audio-Visual Object
+Classification for Human-Robot Collaboration, 2022.},
+  year={2022}
 }
 ```
