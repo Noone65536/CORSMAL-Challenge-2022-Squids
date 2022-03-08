@@ -146,3 +146,13 @@ params: 2,671,217 size: 10.7MB
 GPU: Tesla-V100 32G
 
 Operating system: Linux and Colab
+
+# Bibtex
+```bibtex
+@inproceedings{wen2021bundletrack,
+  title={BundleTrack: 6D Pose Tracking for Novel Objects without Instance or Category-Level 3D Models},
+  author={Wen, B and Bekris, Kostas E},
+  booktitle={IEEE/RSJ International Conference on Intelligent Robots and Systems},
+  year={2021}
+}
+```
